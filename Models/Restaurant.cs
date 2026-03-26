@@ -1,6 +1,4 @@
-﻿using Order_App.Models;
-
-namespace Order_App.Models;
+﻿namespace Order_App.Models;
 
 public class Restaurant
 {
