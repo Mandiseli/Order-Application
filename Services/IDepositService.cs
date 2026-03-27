@@ -1,6 +1,8 @@
-﻿namespace Order_App.Services
+﻿using Order_App.Models;
+
+namespace Order_App.Services;
+
+public interface IDepositService
 {
-    public class IDepositService
-    {
-    }
+    Task<Employee?> MakeDepositAsync(string employeeNumber, decimal amount);
 }

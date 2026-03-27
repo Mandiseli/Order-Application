@@ -15,8 +15,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(opt =>
     opt.UseMySql(cs, ServerVersion.AutoDetect(cs)));
 
 // DI
-//builder.Services.AddScoped<IDepositService, DepositService>();
-//builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IDepositService, DepositService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 
 // CORS for React dev server
 builder.Services.AddCors(o => o.AddPolicy("client",

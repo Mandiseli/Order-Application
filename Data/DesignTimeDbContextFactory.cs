@@ -10,7 +10,7 @@ namespace Order_App
         {
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
 
-            var connectionString = "Server=127.0.0.1;Database=CafeteriaDb;User=root;Password=10May1989;TreatTinyAsBoolean=false;";
+            var connectionString = "Server=localhost;Database=Cafeteria;User=root;Password=10May1989;";
 
             optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
 
