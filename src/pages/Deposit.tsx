@@ -11,25 +11,28 @@ export default function Deposit() {
       await api.post("/deposits", null, {
         params: { employeeNumber, amount }
       });
-      alert("Deposit successful");
+      alert("✅ Deposit successful");
     } catch {
-      alert("Failed");
+      alert("❌ Failed");
     }
   };
 
   return (
-    <div>
-      <h2>Deposit</h2>
+    <div className="card">
+      <h2>💰 Deposit</h2>
 
       <EmployeeSelector onSelect={setEmployeeNumber} />
 
       <input
+        className="input"
         type="number"
         placeholder="Amount"
         onChange={e => setAmount(Number(e.target.value))}
       />
 
-      <button onClick={deposit}>Deposit</button>
+      <button className="button" onClick={deposit}>
+        Deposit
+      </button>
     </div>
   );
 }
