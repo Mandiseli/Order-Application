@@ -120,4 +120,12 @@ public class OrderService : IOrderService
 
         return order;
     }
+
+    public async Task<List<Order>> GetPendingOrdersAsync()
+    {
+        return await _context.Orders
+            .Where(o => o.Status != "Delivered")
+            .Include(o => o.Employee)
+            .ToListAsync();
+    }
 }
