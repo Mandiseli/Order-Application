@@ -19,18 +19,18 @@ export default function Deposit() {
 
   return (
     <div className="card">
-      <h2>💰 Deposit</h2>
+      <h2>💰 Deposit Funds</h2>
 
       <EmployeeSelector onSelect={setEmployeeNumber} />
 
       <input
         className="input"
         type="number"
-        placeholder="Amount"
+        placeholder="Enter amount"
         onChange={e => setAmount(Number(e.target.value))}
       />
 
-      <button className="button" onClick={deposit}>
+      <button className="button button-success" onClick={deposit}>
         Deposit
       </button>
     </div>

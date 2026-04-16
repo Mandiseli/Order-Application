@@ -11,10 +11,13 @@ export default function Employees() {
 
   return (
     <div>
-      <h2>Employees</h2>
+      <h2>👤 Employees</h2>
+
       {employees.map(e => (
-        <div key={e.id}>
-          {e.name} - R{e.balance}
+        <div key={e.id} className="card">
+          <strong>{e.name}</strong>
+          <p>Employee #: {e.employeeNumber}</p>
+          <p>Balance: <strong>R{e.balance}</strong></p>
         </div>
       ))}
     </div>

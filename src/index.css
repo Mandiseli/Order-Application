@@ -1,46 +1,80 @@
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f5f6fa;
+* {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-h2 {
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #f4f6f9;
+  color: #333;
+}
+
+/* Layout */
+.container {
+  padding: 20px 40px;
+}
+
+/* Navbar */
+.navbar {
+  background: linear-gradient(90deg, #007bff, #0056b3);
+  padding: 15px 30px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.navbar a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.navbar a:hover {
+  text-decoration: underline;
+}
+
+/* Cards */
+.card {
+  background: white;
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   margin-bottom: 20px;
 }
 
-.container {
-  padding: 20px;
-}
-
-.card {
-  background: white;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  margin-bottom: 15px;
-}
-
+/* Buttons */
 .button {
-  background-color: #007bff;
+  background: #007bff;
   color: white;
   border: none;
-  padding: 8px 12px;
+  padding: 8px 14px;
   border-radius: 6px;
   cursor: pointer;
+  margin-left: 8px;
 }
 
 .button:hover {
-  background-color: #0056b3;
+  background: #0056b3;
 }
 
+.button-danger {
+  background: #dc3545;
+}
+
+.button-success {
+  background: #28a745;
+}
+
+/* Inputs */
 .input {
   padding: 8px;
-  margin-right: 10px;
+  margin: 10px 10px 10px 0;
   border-radius: 6px;
   border: 1px solid #ccc;
 }
 
+/* Layout split */
 .layout {
   display: flex;
   gap: 30px;
@@ -54,7 +88,27 @@ h2 {
   flex: 1;
 }
 
+/* Menu items */
+.menu-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Cart */
 .cart-item {
   display: flex;
   justify-content: space-between;
+  margin-bottom: 10px;
 }
+
+/* Orders */
+.order-card {
+  border-left: 5px solid #007bff;
+}
+
+/* Status colors */
+.status-Pending { color: orange; }
+.status-Preparing { color: blue; }
+.status-Delivering { color: purple; }
+.status-Delivered { color: green; }
