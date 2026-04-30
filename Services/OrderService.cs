@@ -75,6 +75,14 @@ public class OrderService : IOrderService
 
         return order;
     }
+    // Add transaction for order deduction
+    _context.Transactions.Add(new Transaction
+{
+    EmployeeId = employee.Id,
+    Amount = -total,
+    Type = "Order",
+    Description = $"Order payment (R{total})"
+});
 
     public async Task<List<Order>> GetOrdersForEmployeeAsync(string employeeNumber)
     {

@@ -17,6 +17,7 @@ namespace Order_App.Data
         public DbSet<OrderItem> OrderItems => Set<OrderItem>();
         public DbSet<Deposit> Deposits => Set<Deposit>();
         public DbSet<User> Users => Set<User>();
+        public DbSet<Transaction> Transactions => Set<Transaction>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

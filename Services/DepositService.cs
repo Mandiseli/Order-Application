@@ -15,49 +15,51 @@ public class DepositService : IDepositService
 
     public async Task<Employee?> MakeDepositAsync(string employeeNumber, decimal amount)
     {
-        if (amount <= 0)
-            throw new Exception("Deposit amount must be greater than zero.");
+        if (amount <= 0) return null;
 
         var employee = await _context.Employees
-            .Include(e => e.Deposits)
             .FirstOrDefaultAsync(e => e.EmployeeNumber == employeeNumber);
 
-        if (employee == null)
-            throw new Exception("Employee not found.");
+        if (employee == null) return null;
 
         var now = DateTime.UtcNow;
+        var monthKey = new DateTime(now.Year, now.Month, 1);
 
-        // Get total deposits for current month
-        var monthlyTotal = employee.Deposits
-            .Where(d => d.CreatedAt.Year == now.Year &&
-                        d.CreatedAt.Month == now.Month)
-            .Sum(d => d.Amount);
+        if (employee.LastDepositMonth != monthKey)
+        {
+            employee.LastDepositMonth = monthKey;
+        }
 
-        var newTotal = monthlyTotal + amount;
+        decimal bonus = 0;
+        int eligibleBonuses = (int)(amount / 250);
+        bonus = eligibleBonuses * 500;
 
-        // Calculate bonus steps
-        var previousSteps = (int)(monthlyTotal / 250);
-        var newSteps = (int)(newTotal / 250);
+        // Apply balance
+        employee.Balance += amount + bonus;
 
-        var bonusToApply = (newSteps - previousSteps) * 500;
+        // SAVE TRANSACTIONS
 
-        // Update employee balance
-        employee.Balance += amount + bonusToApply;
-        employee.LastDepositMonth = new DateTime(now.Year, now.Month, 1);
-
-        // Save deposit record
-        var deposit = new Deposit
+        // Deposit record
+        _context.Transactions.Add(new Transaction
         {
             EmployeeId = employee.Id,
             Amount = amount,
-            BonusApplied = bonusToApply,
-            CreatedAt = now
-        };
+            Type = "Deposit",
+            Description = $"Deposit of R{amount}"
+        });
 
-        _context.Deposits.Add(deposit);
+        // Bonus record
+        if (bonus > 0)
+        {
+            _context.Transactions.Add(new Transaction
+            {
+                EmployeeId = employee.Id,
+                Amount = bonus,
+                Type = "Bonus",
+                Description = $"Bonus awarded R{bonus}"
+            });
+        }
 
         await _context.SaveChangesAsync();
-
         return employee;
     }
-}
