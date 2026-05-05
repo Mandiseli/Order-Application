@@ -64,25 +64,26 @@ public class OrderService : IOrderService
         if (employee.Balance < total)
             throw new Exception("Insufficient balance.");
 
-        // Deduct balance
+        // 💰 Deduct balance
         employee.Balance -= total;
 
         order.TotalAmount = total;
 
         _context.Orders.Add(order);
 
+        // ✅ ADD TRANSACTION HERE (CORRECT PLACE)
+        _context.Transactions.Add(new Transaction
+        {
+            EmployeeId = employee.Id,
+            Amount = -total,
+            Type = "Order",
+            Description = $"Order payment (R{total})"
+        });
+
         await _context.SaveChangesAsync();
 
         return order;
     }
-    // Add transaction for order deduction
-    _context.Transactions.Add(new Transaction
-{
-    EmployeeId = employee.Id,
-    Amount = -total,
-    Type = "Order",
-    Description = $"Order payment (R{total})"
-});
 
     public async Task<List<Order>> GetOrdersForEmployeeAsync(string employeeNumber)
     {
@@ -134,6 +135,7 @@ public class OrderService : IOrderService
         return await _context.Orders
             .Where(o => o.Status != "Delivered")
             .Include(o => o.Employee)
+            .OrderByDescending(o => o.OrderDate)
             .ToListAsync();
     }
 }

@@ -25,21 +25,37 @@ public class DepositService : IDepositService
         var now = DateTime.UtcNow;
         var monthKey = new DateTime(now.Year, now.Month, 1);
 
-        if (employee.LastDepositMonth != monthKey)
-        {
-            employee.LastDepositMonth = monthKey;
-        }
+        // 🔥 Get all deposits THIS MONTH
+        var monthlyDeposits = await _context.Transactions
+            .Where(t => t.EmployeeId == employee.Id &&
+                        t.Type == "Deposit" &&
+                        t.CreatedAt.Year == now.Year &&
+                        t.CreatedAt.Month == now.Month)
+            .SumAsync(t => (decimal?)t.Amount) ?? 0;
 
-        decimal bonus = 0;
-        int eligibleBonuses = (int)(amount / 250);
-        bonus = eligibleBonuses * 500;
+        // Total BEFORE this deposit
+        var totalBefore = monthlyDeposits;
+
+        // Total AFTER this deposit
+        var totalAfter = monthlyDeposits + amount;
+
+        // Calculate bonus BEFORE and AFTER
+        int bonusesBefore = (int)(totalBefore / 250);
+        int bonusesAfter = (int)(totalAfter / 250);
+
+        int newBonuses = bonusesAfter - bonusesBefore;
+
+        decimal bonus = newBonuses * 500;
+
+        // Update LastDepositMonth
+        employee.LastDepositMonth = monthKey;
 
         // Apply balance
         employee.Balance += amount + bonus;
 
-        // SAVE TRANSACTIONS
+        // ✅ SAVE TRANSACTIONS
 
-        // Deposit record
+        // Deposit transaction
         _context.Transactions.Add(new Transaction
         {
             EmployeeId = employee.Id,
@@ -48,7 +64,7 @@ public class DepositService : IDepositService
             Description = $"Deposit of R{amount}"
         });
 
-        // Bonus record
+        // Bonus transaction (only if earned)
         if (bonus > 0)
         {
             _context.Transactions.Add(new Transaction
@@ -63,3 +79,4 @@ public class DepositService : IDepositService
         await _context.SaveChangesAsync();
         return employee;
     }
+}
