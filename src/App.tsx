@@ -8,6 +8,9 @@ import Orders from "./pages/Orders";
 import Login from "./pages/Login";
 import AdminDashboard from "./pages/AdminDashboard";
 import Reports from "./pages/Reports";
+import TransactionsPage from "./pages/Transactions";
+
+
 
 // Components
 import Navbar from "./components/Navbar";
@@ -23,6 +26,7 @@ function App() {
           <Route path="/deposit" element={<Deposit />} />
           <Route path="/restaurants" element={<Restaurants />} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/transactions" element={<TransactionsPage />} />
 
           {/* Auth */}
           <Route path="/login" element={<Login />} />

@@ -10,6 +10,7 @@ export default function Navbar() {
       <Link to="/orders">Orders</Link>
       <Link to="/admin">Admin</Link>
       <Link to="/reports">Reports</Link>
+      <Link to="/transactions">Transactions</Link>
     </div>
   );
 }

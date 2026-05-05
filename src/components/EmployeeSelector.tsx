@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/api";
-import { Employee } from "../types";
+import type { Employee } from "../types";
 
 export default function EmployeeSelector({ onSelect }: any) {
   const [employees, setEmployees] = useState<Employee[]>([]);
