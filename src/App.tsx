@@ -9,11 +9,13 @@ import Login from "./pages/Login";
 import AdminDashboard from "./pages/AdminDashboard";
 import Reports from "./pages/Reports";
 import TransactionsPage from "./pages/Transactions";
-
-
-
-// Components
 import Navbar from "./components/Navbar";
+import { useEffect } from "react";
+import { startConnection } from "./signalr";
+
+useEffect(() => {
+  startConnection();
+}, []);
 
 function App() {
   return (

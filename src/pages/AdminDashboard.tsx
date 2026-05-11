@@ -1,36 +1,55 @@
 import { useEffect, useState } from "react";
+import { connection } from "../signalr";
 import { api } from "../api/api";
 
 export default function AdminDashboard() {
   const [orders, setOrders] = useState<any[]>([]);
 
-  const load = () => {
-    api.get("/admin/orders").then(res => setOrders(res.data));
+  const load = async () => {
+    const res = await api.get("/orders/all");
+    setOrders(res.data);
   };
 
   useEffect(() => {
     load();
-    const interval = setInterval(load, 5000); // live updates
-    return () => clearInterval(interval);
+
+    connection.on("ReceiveOrderUpdate", (order) => {
+      setOrders(prev => [order, ...prev]);
+    });
+
+    connection.on("ReceiveStatusUpdate", (updatedOrder) => {
+      setOrders(prev =>
+        prev.map(o => o.id === updatedOrder.id ? updatedOrder : o)
+      );
+    });
   }, []);
 
-  const updateStatus = (id: number, status: string) => {
-    api.put(`/admin/orders/${id}/status`, `"${status}"`, {
-      headers: { "Content-Type": "application/json" }
-    }).then(load);
+  const updateStatus = async (id: number, status: string) => {
+    await api.put(`/orders/${id}/status`, null, {
+      params: { status }
+    });
   };
 
   return (
     <div>
-      <h2>Admin Dashboard</h2>
+      <h2>📡 Live Admin Dashboard</h2>
 
       {orders.map(o => (
         <div key={o.id} className="card">
-          <p>Order #{o.id} - {o.status}</p>
+          <strong>Order #{o.id}</strong>
+          <p>Status: {o.status}</p>
 
-          <button onClick={() => updateStatus(o.id, "Preparing")}>Preparing</button>
-          <button onClick={() => updateStatus(o.id, "Delivering")}>Delivering</button>
-          <button onClick={() => updateStatus(o.id, "Delivered")}>Delivered</button>
+          <button className="button" onClick={() => updateStatus(o.id, "Preparing")}>
+            Preparing
+          </button>
+
+          <button className="button" onClick={() => updateStatus(o.id, "Delivering")}>
+            Delivering
+          </button>
+
+          <button className="button" onClick={() => updateStatus(o.id, "Delivered")}>
+            Delivered
+          </button>
         </div>
       ))}
     </div>
