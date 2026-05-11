@@ -4,12 +4,14 @@ using Order_App.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Order_App.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddSignalR();
 
 // EF Core + MySQL
 var cs = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -25,6 +27,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(opt =>
 builder.Services.AddScoped<IDepositService, DepositService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<AuthService>();
+//builder.Services.AddScoped<IOrderService, OrderService>();
 
 // JWT AUTH
 var jwtKey = builder.Configuration["Jwt:Key"];
@@ -61,19 +64,21 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // MIDDLEWARE
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
+
 app.UseCors("client");
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<OrderHub>("/orderHub");
+
+app.MapGet("/", () => "Order API is running...");
 
 // Auto-migrate
 using (var scope = app.Services.CreateScope())
@@ -82,5 +87,7 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
     SeedData.EnsureSeeded(db);
 }
+
+//app.MapGet("/", () => "Order API is running...");
 
 app.Run();

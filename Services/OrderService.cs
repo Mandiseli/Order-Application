@@ -1,16 +1,20 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Order_App.Data;
 using Order_App.Models;
+using Microsoft.AspNetCore.SignalR;
+using Order_App.Hubs;
 
 namespace Order_App.Services;
 
 public class OrderService : IOrderService
 {
     private readonly ApplicationDbContext _context;
+    private readonly IHubContext<OrderHub> _hub;
 
-    public OrderService(ApplicationDbContext context)
+    public OrderService(ApplicationDbContext context, IHubContext<OrderHub> hub)
     {
         _context = context;
+        _hub = hub;
     }
 
     public async Task<Order?> PlaceOrderAsync(string employeeNumber, Dictionary<int, int> items)
@@ -82,6 +86,8 @@ public class OrderService : IOrderService
 
         await _context.SaveChangesAsync();
 
+        await _hub.Clients.All.SendAsync("ReceiveOrderUpdate", order);
+
         return order;
     }
 
@@ -118,14 +124,25 @@ public class OrderService : IOrderService
         if (!validStatuses.Contains(status))
             throw new Exception("Invalid status value.");
 
-        var order = await _context.Orders.FindAsync(orderId);
+        var existingOrder = await _context.Orders.FindAsync(orderId);
 
-        if (order == null)
+        if (existingOrder == null)
             throw new Exception("Order not found.");
 
-        order.Status = status;
+        existingOrder.Status = status;
 
         await _context.SaveChangesAsync();
+
+        var order = await _context.Orders
+            .Include(o => o.Employee)
+            .FirstOrDefaultAsync(o => o.Id == orderId);
+
+        if (order == null) return null;
+
+        order.Status = status;
+        await _context.SaveChangesAsync();
+
+        await _hub.Clients.All.SendAsync("ReceiveStatusUpdate", order);
 
         return order;
     }
