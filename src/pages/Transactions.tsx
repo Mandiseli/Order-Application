@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { api } from "../api/api";
-import { Transaction } from "../types";
+import type { Transaction } from "../types";
 import EmployeeSelector from "../components/EmployeeSelector";
 
 export default function TransactionsPage() {

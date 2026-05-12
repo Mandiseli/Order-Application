@@ -33,3 +33,12 @@ export interface Order {
   status: string;
   items: OrderItem[];
 }
+
+export interface Transaction {
+  id: number;
+  employeeId: number;
+  amount: number;
+  type: string;
+  description: string;
+  createdAt: string;
+}
