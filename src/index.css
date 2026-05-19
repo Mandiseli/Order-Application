@@ -1,114 +1,27 @@
 * {
-  box-sizing: border-box;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-  font-family: "Segoe UI", Arial, sans-serif;
-  background: #f4f6f9;
-  color: #333;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f4f7fb;
+  color: #1e293b;
 }
 
-/* Layout */
-.container {
-  padding: 20px 40px;
-}
-
-/* Navbar */
-.navbar {
-  background: linear-gradient(90deg, #007bff, #0056b3);
-  padding: 15px 30px;
-  display: flex;
-  gap: 20px;
-  align-items: center;
-}
-
-.navbar a {
-  color: white;
+a {
   text-decoration: none;
-  font-weight: 500;
 }
 
-.navbar a:hover {
-  text-decoration: underline;
-}
-
-/* Cards */
-.card {
-  background: white;
-  padding: 18px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  margin-bottom: 20px;
-}
-
-/* Buttons */
-.button {
-  background: #007bff;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
+button {
   cursor: pointer;
-  margin-left: 8px;
+  border: none;
 }
 
-.button:hover {
-  background: #0056b3;
+.container {
+  width: 95%;
+  max-width: 1300px;
+  margin: auto;
+  padding: 20px 0;
 }
-
-.button-danger {
-  background: #dc3545;
-}
-
-.button-success {
-  background: #28a745;
-}
-
-/* Inputs */
-.input {
-  padding: 8px;
-  margin: 10px 10px 10px 0;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-
-/* Layout split */
-.layout {
-  display: flex;
-  gap: 30px;
-}
-
-.left {
-  flex: 2;
-}
-
-.right {
-  flex: 1;
-}
-
-/* Menu items */
-.menu-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* Cart */
-.cart-item {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-/* Orders */
-.order-card {
-  border-left: 5px solid #007bff;
-}
-
-/* Status colors */
-.status-Pending { color: orange; }
-.status-Preparing { color: blue; }
-.status-Delivering { color: purple; }
-.status-Delivered { color: green; }

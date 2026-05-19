@@ -1,16 +1,26 @@
 import { Link } from "react-router-dom";
-import "../index.css";
+import "./Navbar.css";
 
 export default function Navbar() {
   return (
-    <div className="navbar">
-      <Link to="/">Employees</Link>
-      <Link to="/deposit">Deposit</Link>
-      <Link to="/restaurants">Order Food</Link>
-      <Link to="/orders">Orders</Link>
-      <Link to="/admin">Admin</Link>
-      <Link to="/reports">Reports</Link>
-      <Link to="/transactions">Transactions</Link>
-    </div>
+    <nav className="navbar">
+
+      <div className="navbar-logo">
+        🍔 Cafeteria System
+      </div>
+
+      <div className="navbar-links">
+
+        <Link to="/">Employees</Link>
+        <Link to="/deposit">Deposits</Link>
+        <Link to="/restaurants">Restaurants</Link>
+        <Link to="/orders">Orders</Link>
+        <Link to="/transactions">Transactions</Link>
+        <Link to="/admin">Admin</Link>
+        <Link to="/reports">Reports</Link>
+
+      </div>
+
+    </nav>
   );
 }
