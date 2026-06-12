@@ -1,4 +1,4 @@
-﻿using Order_App.Models;
+﻿using System.Text.Json.Serialization;
 
 namespace Order_App.Models;
 
@@ -10,6 +10,8 @@ public class Order
     public decimal TotalAmount { get; set; }
     public string Status { get; set; } = "Pending";
 
+    [JsonIgnore]
     public Employee? Employee { get; set; }
+
     public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
 }

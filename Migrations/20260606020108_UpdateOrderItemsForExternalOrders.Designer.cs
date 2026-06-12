@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Order_App.Data;
 
@@ -10,9 +11,11 @@ using Order_App.Data;
 namespace Order_App.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260606020108_UpdateOrderItemsForExternalOrders")]
+    partial class UpdateOrderItemsForExternalOrders
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -131,11 +134,7 @@ namespace Order_App.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<string>("ItemName")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int?>("MenuItemId")
+                    b.Property<int>("MenuItemId")
                         .HasColumnType("int");
 
                     b.Property<int>("OrderId")
@@ -269,7 +268,9 @@ namespace Order_App.Migrations
                 {
                     b.HasOne("Order_App.Models.MenuItem", "MenuItem")
                         .WithMany()
-                        .HasForeignKey("MenuItemId");
+                        .HasForeignKey("MenuItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Order_App.Models.Order", "Order")
                         .WithMany("Items")

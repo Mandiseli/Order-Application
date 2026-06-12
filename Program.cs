@@ -4,32 +4,37 @@ using Order_App.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json.Serialization;
 using Order_App.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.WriteIndented = true;
+    });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSignalR();
 
-// EF Core + MySQL
 var cs = builder.Configuration.GetConnectionString("DefaultConnection");
 
 if (string.IsNullOrWhiteSpace(cs))
 {
     throw new Exception("Connection string 'DefaultConnection' is missing.");
 }
+
 builder.Services.AddDbContext<ApplicationDbContext>(opt =>
     opt.UseMySql(cs, ServerVersion.AutoDetect(cs)));
 
-// DI
 builder.Services.AddScoped<IDepositService, DepositService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<AuthService>();
-//builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddHttpClient<IGeoapifyService, GeoapifyService>();
 
-// JWT AUTH
 var jwtKey = builder.Configuration["Jwt:Key"];
 
 if (string.IsNullOrWhiteSpace(jwtKey))
@@ -38,56 +43,52 @@ if (string.IsNullOrWhiteSpace(jwtKey))
 }
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
+    .AddJwtBearer(options =>
     {
-        ValidateIssuer = false,
-        ValidateAudience = false,
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(jwtKey))
-    };
-});
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtKey))
+        };
+    });
 
-// CORS (FIXED)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("client", policy =>
     {
-        policy.AllowAnyHeader()
-              .AllowAnyMethod()
-              .WithOrigins("http://localhost:5173", "https://localhost:5173");
+        policy
+            .SetIsOriginAllowed(_ => true)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
 var app = builder.Build();
 
-// MIDDLEWARE
 app.UseSwagger();
 app.UseSwaggerUI();
 
-//app.UseHttpsRedirection();
+app.UseRouting();
 
 app.UseCors("client");
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
-
-app.MapHub<OrderHub>("/orderHub");
+app.MapControllers().RequireCors("client");
+app.MapHub<OrderHub>("/orderHub").RequireCors("client");
 
 app.MapGet("/", () => "Order API is running...");
 
-// Auto-migrate
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
     SeedData.EnsureSeeded(db);
 }
-
-//app.MapGet("/", () => "Order API is running...");
 
 app.Run();

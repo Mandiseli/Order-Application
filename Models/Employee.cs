@@ -1,4 +1,6 @@
-﻿namespace Order_App.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace Order_App.Models;
 
 public class Employee
 {
@@ -8,6 +10,9 @@ public class Employee
     public decimal Balance { get; set; }
     public DateTime LastDepositMonth { get; set; }
 
+    [JsonIgnore]
     public ICollection<Order> Orders { get; set; } = new List<Order>();
+
+    [JsonIgnore]
     public ICollection<Deposit> Deposits { get; set; } = new List<Deposit>();
 }
