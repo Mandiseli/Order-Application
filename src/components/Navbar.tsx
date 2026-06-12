@@ -11,6 +11,7 @@ export default function Navbar() {
 
       <div className="navbar-links">
 
+        <Link to="/employees/add">Add Employee</Link>
         <Link to="/">Employees</Link>
         <Link to="/deposit">Deposits</Link>
         <Link to="/restaurants">Restaurants</Link>

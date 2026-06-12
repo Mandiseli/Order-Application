@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 
-// Pages
 import Employees from "./pages/Employees";
 import Deposit from "./pages/Deposit";
 import Restaurants from "./pages/Restaurants";
@@ -10,40 +9,36 @@ import Login from "./pages/Login";
 import AdminDashboard from "./pages/AdminDashboard";
 import Reports from "./pages/Reports";
 import TransactionsPage from "./pages/Transactions";
+import AddEmployee from "./pages/AddEmployee";
 
-// Components
-import Navbar from "./components/Navbar";
-
-// SignalR
+import MainLayout from "./layouts/MainLayout";
 import { startConnection } from "./signalr";
 
-function App() {
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
+function App() {
   useEffect(() => {
     startConnection();
   }, []);
 
   return (
     <BrowserRouter>
-      <Navbar />
-
-      <div className="container">
+      <MainLayout>
         <Routes>
-          {/* Employee Pages */}
           <Route path="/" element={<Employees />} />
+          <Route path="/employees/add" element={<AddEmployee />} />
           <Route path="/deposit" element={<Deposit />} />
           <Route path="/restaurants" element={<Restaurants />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/transactions" element={<TransactionsPage />} />
-
-          {/* Authentication */}
           <Route path="/login" element={<Login />} />
-
-          {/* Admin */}
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/reports" element={<Reports />} />
         </Routes>
-      </div>
+      </MainLayout>
+
+      <ToastContainer position="top-right" />
     </BrowserRouter>
   );
 }

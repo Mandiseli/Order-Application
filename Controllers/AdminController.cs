@@ -14,22 +14,79 @@ public class AdminController : ControllerBase
         _service = service;
     }
 
-    // Get all orders (admin view)
     [HttpGet("orders")]
     public async Task<IActionResult> GetAllOrders()
-        => Ok(await _service.GetAllOrdersAsync());
-
-    // Update order status (admin updates)
-    [HttpPut("orders/{id}/status")]
-    public async Task<IActionResult> UpdateStatus(int id, [FromBody] string status)
     {
-        if (string.IsNullOrWhiteSpace(status))
-            return BadRequest("Status cannot be empty.");
+        var orders = await _service.GetAllOrdersAsync();
 
-        var order = await _service.UpdateOrderStatusAsync(id, status);
-        if (order == null)
-            return NotFound("Order not found.");
+        var result = orders.Select(o => new
+        {
+            id = o.Id,
+            employeeId = o.EmployeeId,
+            employeeName = o.Employee?.Name ?? "",
+            employeeNumber = o.Employee?.EmployeeNumber ?? "",
+            orderDate = o.OrderDate,
+            totalAmount = o.TotalAmount,
+            status = o.Status,
+            items = o.Items.Select(i => new
+            {
+                id = i.Id,
+                itemName = i.ItemName,
+                quantity = i.Quantity,
+                unitPriceAtTimeOfOrder = i.UnitPriceAtTimeOfOrder
+            }).ToList()
+        }).ToList();
 
-        return Ok(order);
+        return Ok(result);
+    }
+
+    [HttpGet("orders/pending")]
+    public async Task<IActionResult> Pending()
+    {
+        var orders = await _service.GetAllOrdersAsync();
+
+        var result = orders
+            .Where(o => o.Status == "Pending")
+            .Select(o => new
+            {
+                id = o.Id,
+                employeeId = o.EmployeeId,
+                employeeName = o.Employee?.Name ?? "",
+                employeeNumber = o.Employee?.EmployeeNumber ?? "",
+                orderDate = o.OrderDate,
+                totalAmount = o.TotalAmount,
+                status = o.Status,
+                items = o.Items.Select(i => new
+                {
+                    id = i.Id,
+                    itemName = i.ItemName,
+                    quantity = i.Quantity,
+                    unitPriceAtTimeOfOrder = i.UnitPriceAtTimeOfOrder
+                }).ToList()
+            }).ToList();
+
+        return Ok(result);
+    }
+
+    [HttpPatch("orders/{id:int}/status/{status}")]
+    public async Task<IActionResult> UpdateStatus(int id, string status)
+    {
+        try
+        {
+            var order = await _service.UpdateOrderStatusAsync(id, status);
+
+            return Ok(new
+            {
+                id = order!.Id,
+                employeeId = order.EmployeeId,
+                totalAmount = order.TotalAmount,
+                status = order.Status,
+                orderDate = order.OrderDate
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

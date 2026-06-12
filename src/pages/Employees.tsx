@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/api";
+import { Link } from "react-router-dom";
 
 export default function Employees() {
 
@@ -52,4 +53,10 @@ export default function Employees() {
 
     </div>
   );
+  <Link
+  to="/employees/add"
+  className="button button-success"
+>
+  ➕ Add Employee
+</Link>
 }

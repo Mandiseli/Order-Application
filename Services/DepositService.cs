@@ -15,49 +15,68 @@ public class DepositService : IDepositService
 
     public async Task<Employee?> MakeDepositAsync(string employeeNumber, decimal amount)
     {
-        if (amount <= 0)
-            throw new Exception("Deposit amount must be greater than zero.");
+        if (amount <= 0) return null;
 
         var employee = await _context.Employees
-            .Include(e => e.Deposits)
             .FirstOrDefaultAsync(e => e.EmployeeNumber == employeeNumber);
 
-        if (employee == null)
-            throw new Exception("Employee not found.");
+        if (employee == null) return null;
 
         var now = DateTime.UtcNow;
+        var monthKey = new DateTime(now.Year, now.Month, 1);
 
-        // Get total deposits for current month
-        var monthlyTotal = employee.Deposits
-            .Where(d => d.CreatedAt.Year == now.Year &&
-                        d.CreatedAt.Month == now.Month)
-            .Sum(d => d.Amount);
+        // 🔥 Get all deposits THIS MONTH
+        var monthlyDeposits = await _context.Transactions
+            .Where(t => t.EmployeeId == employee.Id &&
+                        t.Type == "Deposit" &&
+                        t.CreatedAt.Year == now.Year &&
+                        t.CreatedAt.Month == now.Month)
+            .SumAsync(t => (decimal?)t.Amount) ?? 0;
 
-        var newTotal = monthlyTotal + amount;
+        // Total BEFORE this deposit
+        var totalBefore = monthlyDeposits;
 
-        // Calculate bonus steps
-        var previousSteps = (int)(monthlyTotal / 250);
-        var newSteps = (int)(newTotal / 250);
+        // Total AFTER this deposit
+        var totalAfter = monthlyDeposits + amount;
 
-        var bonusToApply = (newSteps - previousSteps) * 500;
+        // Calculate bonus BEFORE and AFTER
+        int bonusesBefore = (int)(totalBefore / 250);
+        int bonusesAfter = (int)(totalAfter / 250);
 
-        // Update employee balance
-        employee.Balance += amount + bonusToApply;
-        employee.LastDepositMonth = new DateTime(now.Year, now.Month, 1);
+        int newBonuses = bonusesAfter - bonusesBefore;
 
-        // Save deposit record
-        var deposit = new Deposit
+        decimal bonus = newBonuses * 500;
+
+        // Update LastDepositMonth
+        employee.LastDepositMonth = monthKey;
+
+        // Apply balance
+        employee.Balance += amount + bonus;
+
+        // ✅ SAVE TRANSACTIONS
+
+        // Deposit transaction
+        _context.Transactions.Add(new Transaction
         {
             EmployeeId = employee.Id,
             Amount = amount,
-            BonusApplied = bonusToApply,
-            CreatedAt = now
-        };
+            Type = "Deposit",
+            Description = $"Deposit of R{amount}"
+        });
 
-        _context.Deposits.Add(deposit);
+        // Bonus transaction (only if earned)
+        if (bonus > 0)
+        {
+            _context.Transactions.Add(new Transaction
+            {
+                EmployeeId = employee.Id,
+                Amount = bonus,
+                Type = "Bonus",
+                Description = $"Bonus awarded R{bonus}"
+            });
+        }
 
         await _context.SaveChangesAsync();
-
         return employee;
     }
 }

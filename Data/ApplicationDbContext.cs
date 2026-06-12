@@ -16,6 +16,8 @@ namespace Order_App.Data
         public DbSet<Order> Orders => Set<Order>();
         public DbSet<OrderItem> OrderItems => Set<OrderItem>();
         public DbSet<Deposit> Deposits => Set<Deposit>();
+        public DbSet<User> Users => Set<User>();
+        public DbSet<Transaction> Transactions => Set<Transaction>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -37,9 +39,11 @@ namespace Order_App.Data
                 .HasForeignKey(o => o.EmployeeId);
 
             modelBuilder.Entity<OrderItem>()
-                .HasOne(oi => oi.Order)
-                .WithMany(o => o.Items)
-                .HasForeignKey(oi => oi.OrderId);
+                .HasOne(oi => oi.MenuItem)
+                .WithMany()
+                .HasForeignKey(oi => oi.MenuItemId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<Deposit>()
                 .HasOne(d => d.Employee)

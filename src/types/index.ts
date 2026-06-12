@@ -3,6 +3,29 @@ export interface Employee {
   name: string;
   employeeNumber: string;
   balance: number;
+  lastDepositMonth?: string;
+}
+
+export interface GeoRestaurant {
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  category: string;
+}
+
+export interface CartItem {
+  menuItemId: number;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+export interface MenuItem {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
 }
 
 export interface Restaurant {

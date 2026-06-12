@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Order_App.Models;
+using Order_App.Dtos;
 using Order_App.Services;
 
 namespace Order_App.Controllers;
@@ -15,35 +15,99 @@ public class OrdersController : ControllerBase
         _orderService = orderService;
     }
 
-    // Place order
-    [HttpPost("place")]
-    public async Task<ActionResult<Order>> PlaceOrder(string employeeNumber, Dictionary<int, int> items)
+    [HttpPost("place-external")]
+    public async Task<IActionResult> PlaceExternalOrder([FromBody] ExternalOrderDto dto)
     {
-        var order = await _orderService.PlaceOrderAsync(employeeNumber, items);
-        if (order == null) return BadRequest("Order failed.");
-        return Ok(order);
+        try
+        {
+            var order = await _orderService.PlaceExternalOrderAsync(dto);
+
+            return Ok(new
+            {
+                id = order!.Id,
+                employeeId = order.EmployeeId,
+                totalAmount = order.TotalAmount,
+                status = order.Status,
+                orderDate = order.OrderDate
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
-    // Get orders for an employee
-    [HttpGet("employee/{employeeNumber}")]
-    public async Task<ActionResult<IEnumerable<Order>>> GetOrdersForEmployee(string employeeNumber)
-        => Ok(await _orderService.GetOrdersForEmployeeAsync(employeeNumber));
-
-    // Get all orders
     [HttpGet("all")]
-    public async Task<ActionResult<IEnumerable<Order>>> GetAllOrders()
-        => Ok(await _orderService.GetAllOrdersAsync());
-
-    // Update order status
-    [HttpPut("{id}/status")]
-    public async Task<ActionResult<Order>> UpdateStatus(int id, [FromBody] string status)
+    public async Task<IActionResult> GetAllOrders()
     {
-        if (string.IsNullOrWhiteSpace(status))
-            return BadRequest("Status cannot be empty.");
+        var orders = await _orderService.GetAllOrdersAsync();
 
-        var order = await _orderService.UpdateOrderStatusAsync(id, status);
-        if (order == null) return NotFound();
-        return Ok(order);
+        var result = orders.Select(o => new
+        {
+            id = o.Id,
+            employeeId = o.EmployeeId,
+            employeeName = o.Employee == null ? "" : o.Employee.Name,
+            employeeNumber = o.Employee == null ? "" : o.Employee.EmployeeNumber,
+            orderDate = o.OrderDate,
+            totalAmount = o.TotalAmount,
+            status = o.Status,
+            items = o.Items.Select(i => new
+            {
+                id = i.Id,
+                itemName = i.ItemName,
+                quantity = i.Quantity,
+                unitPriceAtTimeOfOrder = i.UnitPriceAtTimeOfOrder
+            }).ToList()
+        }).ToList();
+
+        return Ok(result);
+    }
+
+    [HttpGet("employee/{employeeNumber}")]
+    public async Task<IActionResult> GetOrdersForEmployee(string employeeNumber)
+    {
+        var orders = await _orderService.GetOrdersForEmployeeAsync(employeeNumber);
+
+        var result = orders.Select(o => new
+        {
+            id = o.Id,
+            employeeId = o.EmployeeId,
+            employeeName = o.Employee == null ? "" : o.Employee.Name,
+            employeeNumber = o.Employee == null ? "" : o.Employee.EmployeeNumber,
+            orderDate = o.OrderDate,
+            totalAmount = o.TotalAmount,
+            status = o.Status,
+            items = o.Items.Select(i => new
+            {
+                id = i.Id,
+                itemName = i.ItemName,
+                quantity = i.Quantity,
+                unitPriceAtTimeOfOrder = i.UnitPriceAtTimeOfOrder
+            }).ToList()
+        }).ToList();
+
+        return Ok(result);
+    }
+
+    [HttpPut("{id}/status")]
+    public async Task<IActionResult> UpdateStatus(int id, [FromBody] string status)
+    {
+        try
+        {
+            var order = await _orderService.UpdateOrderStatusAsync(id, status);
+
+            return Ok(new
+            {
+                id = order!.Id,
+                employeeId = order.EmployeeId,
+                totalAmount = order.TotalAmount,
+                status = order.Status,
+                orderDate = order.OrderDate
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }
-

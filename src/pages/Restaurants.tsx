@@ -1,101 +1,212 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { api } from "../api/api";
-import type { Restaurant } from "../types";
-import { useCart } from "../hooks/useCart";
+import { toast } from "react-toastify";
+import CitySelector from "../components/CitySelector";
 import EmployeeSelector from "../components/EmployeeSelector";
+import { useCart } from "../hooks/useCart";
+import { getSampleMenu } from "../data/sampleMenus";
+import type { GeoRestaurant } from "../types";
 
 export default function Restaurants() {
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [restaurants, setRestaurants] = useState<GeoRestaurant[]>([]);
   const [employeeNumber, setEmployeeNumber] = useState("");
+  const [city, setCity] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const { cart, addToCart, total, removeFromCart, clearCart } = useCart();
+  const { cart, addToCart, removeFromCart, clearCart, total } = useCart();
 
-  useEffect(() => {
-    api.get("/restaurants").then(res => setRestaurants(res.data));
-  }, []);
-
-  const placeOrder = async () => {
-    const items: any = {};
-    cart.forEach(c => items[c.menuItemId] = c.quantity);
+  const loadRestaurants = async (selectedCity: string) => {
+    if (!selectedCity) return;
 
     try {
-      await api.post("/orders/place", null, {
-        params: { employeeNumber, items }
+      setLoading(true);
+      setCity(selectedCity);
+
+      const res = await api.get(`/places/restaurants/${selectedCity}`);
+      setRestaurants(res.data);
+
+      toast.success(`Restaurants loaded for ${selectedCity}`);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load restaurants");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addMenuItemToCart = (
+    restaurantIndex: number,
+    restaurantName: string,
+    itemId: number,
+    itemName: string,
+    price: number
+  ) => {
+    addToCart({
+      menuItemId: restaurantIndex * 1000 + itemId,
+      name: `${restaurantName} - ${itemName}`,
+      price,
+      quantity: 1
+    });
+
+    toast.success(`${itemName} added to cart`);
+  };
+
+  const placeOrder = async () => {
+    if (!employeeNumber) {
+      toast.error("Please select an employee");
+      return;
+    }
+
+    if (cart.length === 0) {
+      toast.error("Cart is empty");
+      return;
+    }
+
+    try {
+      await api.post("/orders/place-external", {
+        employeeNumber,
+        items: cart.map((item) => ({
+          itemName: item.name,
+          price: item.price,
+          quantity: item.quantity
+        }))
       });
 
-      alert("✅ Order placed!");
+      toast.success("Order placed successfully 🍔");
       clearCart();
-    } catch {
-      alert("❌ Failed");
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.response?.data || "Order failed");
     }
   };
 
   return (
-    <div className="layout">
-
-      {/* LEFT */}
-      <div className="left">
-        <h2>🍔 Restaurants</h2>
+    <div className="uber-layout">
+      <div className="uber-left">
+        <h1 className="page-title">🍔 Restaurants Near You</h1>
 
         <div className="card">
           <EmployeeSelector onSelect={setEmployeeNumber} />
         </div>
 
-        {restaurants.map(r => (
-          <div key={r.id} className="card">
-            <h3>{r.name}</h3>
-            <p>{r.locationDescription}</p>
+        <div className="card">
+          <CitySelector onSelect={loadRestaurants} />
+        </div>
 
-            {r.menuItems.map(m => (
-              <div key={m.id} className="menu-item">
-                <div>
-                  <strong>{m.name}</strong>
-                  <p>R{m.price}</p>
+        {employeeNumber && (
+          <div className="card">
+            <strong>Selected Employee:</strong> {employeeNumber}
+          </div>
+        )}
+
+        {city && (
+          <div className="card">
+            <strong>Selected City:</strong> {city}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="card">Loading restaurants...</div>
+        ) : restaurants.length === 0 ? (
+          <div className="card">Select a city to view restaurants.</div>
+        ) : (
+          restaurants.map((restaurant, restaurantIndex) => {
+            const menu = getSampleMenu(restaurant.name);
+
+            return (
+              <div
+                key={`${restaurant.name}-${restaurantIndex}`}
+                className="uber-restaurant-card"
+              >
+                <div className="restaurant-header">
+                  <h2>{restaurant.name}</h2>
+                  <p>{restaurant.address}</p>
+                  <p className="muted">
+                    📍 {restaurant.latitude}, {restaurant.longitude}
+                  </p>
                 </div>
 
-                <button
-                  className="button"
-                  onClick={() =>
-                    addToCart({
-                      menuItemId: m.id,
-                      name: m.name,
-                      price: m.price,
-                      quantity: 1
-                    })
-                  }
-                >
-                  Add
-                </button>
+                <div className="menu-list">
+                  {menu.map((item) => (
+                    <div key={item.id} className="menu-item">
+                      <div className="menu-info">
+                        <strong>{item.name}</strong>
+                        <p>{item.description}</p>
+                        <p>R{item.price.toFixed(2)}</p>
+                      </div>
+
+                      <button
+                        className="add-btn"
+                        onClick={() =>
+                          addMenuItemToCart(
+                            restaurantIndex,
+                            restaurant.name,
+                            item.id,
+                            item.name,
+                            item.price
+                          )
+                        }
+                      >
+                        +
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>
-        ))}
+            );
+          })
+        )}
       </div>
 
-      {/* RIGHT CART */}
-      <div className="right">
-        <div className="card">
-          <h2>🛒 Cart</h2>
+      <div className="uber-right">
+        <div className="cart-box">
+          <h2>🛒 Your Order</h2>
 
-          {cart.map(item => (
-            <div key={item.menuItemId} className="cart-item">
-              <span>{item.name} x {item.quantity}</span>
-              <span>R{item.price * item.quantity}</span>
-              <button
-                className="button button-danger"
-                onClick={() => removeFromCart(item.menuItemId)}
-              >
-                ❌
-              </button>
-            </div>
-          ))}
+          {cart.length === 0 ? (
+            <p className="muted">Your cart is empty</p>
+          ) : (
+            cart.map((item) => (
+              <div key={item.menuItemId} className="cart-item">
+                <div>
+                  <strong>{item.name}</strong>
+
+                  <div className="qty-controls">
+                    <button onClick={() => removeFromCart(item.menuItemId)}>
+                      -
+                    </button>
+
+                    <span>{item.quantity}</span>
+
+                    <button
+                      onClick={() =>
+                        addToCart({
+                          menuItemId: item.menuItemId,
+                          name: item.name,
+                          price: item.price,
+                          quantity: 1
+                        })
+                      }
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <p>R{(item.price * item.quantity).toFixed(2)}</p>
+              </div>
+            ))
+          )}
 
           <hr />
 
-          <h3>Total: R{total}</h3>
+          <h3>Total: R{total.toFixed(2)}</h3>
 
-          <button className="button button-success" onClick={placeOrder}>
-            Place Order
+          <button className="checkout-btn" onClick={placeOrder}>
+            Checkout
+          </button>
+
+          <button className="clear-btn" onClick={clearCart}>
+            Clear Cart
           </button>
         </div>
       </div>
