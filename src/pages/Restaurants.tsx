@@ -51,6 +51,48 @@ export default function Restaurants() {
     toast.success(`${itemName} added to cart`);
   };
 
+  const addFavorite = async (restaurant: GeoRestaurant) => {
+    if (!employeeNumber) {
+      toast.error("Please select an employee first");
+      return;
+    }
+
+    try {
+      await api.post("/favorites", {
+        employeeNumber,
+        restaurantName: restaurant.name,
+        restaurantAddress: restaurant.address,
+        latitude: restaurant.latitude,
+        longitude: restaurant.longitude
+      });
+
+      toast.success("Added to favorites ❤️");
+    } catch (error: any) {
+      toast.error(error.response?.data || "Failed to add favorite");
+    }
+  };
+
+  const rateRestaurant = async (restaurant: GeoRestaurant, rating: number) => {
+    if (!employeeNumber) {
+      toast.error("Please select an employee first");
+      return;
+    }
+
+    try {
+      await api.post("/restaurantRatings", {
+        employeeNumber,
+        restaurantName: restaurant.name,
+        restaurantAddress: restaurant.address,
+        rating,
+        comment: ""
+      });
+
+      toast.success(`Rated ${rating} stars ⭐`);
+    } catch (error: any) {
+      toast.error(error.response?.data || "Failed to rate restaurant");
+    }
+  };
+
   const placeOrder = async () => {
     if (!employeeNumber) {
       toast.error("Please select an employee");
@@ -120,10 +162,31 @@ export default function Restaurants() {
               >
                 <div className="restaurant-header">
                   <h2>{restaurant.name}</h2>
+
                   <p>{restaurant.address}</p>
+
                   <p className="muted">
                     📍 {restaurant.latitude}, {restaurant.longitude}
                   </p>
+
+                  <div className="restaurant-actions">
+                    <button
+                      className="button"
+                      onClick={() => addFavorite(restaurant)}
+                    >
+                      ❤️ Favorite
+                    </button>
+
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        className="star-btn"
+                        onClick={() => rateRestaurant(restaurant, star)}
+                      >
+                        ⭐
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="menu-list">

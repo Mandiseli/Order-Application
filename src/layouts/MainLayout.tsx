@@ -16,7 +16,8 @@ export default function MainLayout({ children }: Props) {
 
         <nav>
           <Link to="/" onClick={() => setOpen(false)}>Employees</Link>
-          <Link to="/employees/add" onClick={() => setOpen(false)}>➕ Add Employee</Link>
+          <Link to="/employees/add" onClick={() => setOpen(false)}>Add Employee</Link>
+          <Link to="/employee-profile" onClick={() => setOpen(false)}>Employee Profile</Link>
           <Link to="/deposit" onClick={() => setOpen(false)}>Deposits</Link>
           <Link to="/restaurants" onClick={() => setOpen(false)}>Restaurants</Link>
           <Link to="/orders" onClick={() => setOpen(false)}>Orders</Link>

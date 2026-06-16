@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 
+
 import Employees from "./pages/Employees";
 import Deposit from "./pages/Deposit";
 import Restaurants from "./pages/Restaurants";
@@ -10,6 +11,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Reports from "./pages/Reports";
 import TransactionsPage from "./pages/Transactions";
 import AddEmployee from "./pages/AddEmployee";
+import EmployeeProfile from "./pages/EmployeeProfile";
 
 import MainLayout from "./layouts/MainLayout";
 import { startConnection } from "./signalr";
@@ -35,6 +37,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/reports" element={<Reports />} />
+          <Route path="/employee-profile" element={<EmployeeProfile />} />
         </Routes>
       </MainLayout>
 
