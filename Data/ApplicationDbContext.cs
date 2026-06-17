@@ -18,6 +18,8 @@ namespace Order_App.Data
         public DbSet<Deposit> Deposits => Set<Deposit>();
         public DbSet<User> Users => Set<User>();
         public DbSet<Transaction> Transactions => Set<Transaction>();
+        public DbSet<RestaurantRating> RestaurantRatings => Set<RestaurantRating>();
+        public DbSet<FavoriteRestaurant> FavoriteRestaurants => Set<FavoriteRestaurant>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -49,6 +51,16 @@ namespace Order_App.Data
                 .HasOne(d => d.Employee)
                 .WithMany(e => e.Deposits)
                 .HasForeignKey(d => d.EmployeeId);
+
+            modelBuilder.Entity<RestaurantRating>()
+                .HasOne(r => r.Employee)
+                .WithMany()
+                .HasForeignKey(r => r.EmployeeId);
+
+            modelBuilder.Entity<FavoriteRestaurant>()
+                .HasOne(f => f.Employee)
+                .WithMany()
+                .HasForeignKey(f => f.EmployeeId);
 
         }
     }
