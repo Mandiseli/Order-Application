@@ -12,6 +12,7 @@ export interface GeoRestaurant {
   latitude: number;
   longitude: number;
   category: string;
+  imageUrl?: string;
 }
 
 export interface CartItem {

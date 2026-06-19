@@ -2,17 +2,31 @@ import { useEffect, useState } from "react";
 import { api } from "../api/api";
 import { toast } from "react-toastify";
 
-interface Order {
-  id: number;
+interface Monthly {
+  year: number;
+  month: number;
+  totalOrders: number;
+  totalSpending: number;
+}
+
+interface EmployeeReport {
   employeeName: string;
   employeeNumber: string;
-  orderDate: string;
-  totalAmount: number;
-  status: string;
+  totalOrders: number;
+  totalSpending: number;
+}
+
+interface RestaurantReport {
+  restaurantName: string;
+  totalOrders: number;
+  totalRevenue: number;
 }
 
 export default function Reports() {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [monthly, setMonthly] = useState<Monthly[]>([]);
+  const [topEmployees, setTopEmployees] = useState<EmployeeReport[]>([]);
+  const [highestSpending, setHighestSpending] = useState<EmployeeReport[]>([]);
+  const [topRestaurants, setTopRestaurants] = useState<RestaurantReport[]>([]);
 
   useEffect(() => {
     loadReports();
@@ -20,107 +34,86 @@ export default function Reports() {
 
   const loadReports = async () => {
     try {
-      const res = await api.get("/orders/all");
-      setOrders(res.data);
+      const monthlyRes = await api.get("/reports/monthly-spending");
+      setMonthly(monthlyRes.data);
+
+      const topEmployeesRes = await api.get("/reports/top-employees");
+      setTopEmployees(topEmployeesRes.data);
+
+      const highestSpendingRes = await api.get("/reports/highest-spending-employees");
+      setHighestSpending(highestSpendingRes.data);
+
+      const topRestaurantsRes = await api.get("/reports/top-restaurants");
+      setTopRestaurants(topRestaurantsRes.data);
     } catch (error) {
       console.error(error);
       toast.error("Failed to load reports");
     }
   };
 
-  const totalRevenue = orders.reduce(
-    (sum, order) => sum + Number(order.totalAmount),
-    0
-  );
-
-  const pending = orders.filter(o => o.status === "Pending").length;
-  const preparing = orders.filter(o => o.status === "Preparing").length;
-  const delivering = orders.filter(o => o.status === "Delivering").length;
-  const delivered = orders.filter(o => o.status === "Delivered").length;
-
-  const employeeSpend = orders.reduce<Record<string, number>>((acc, order) => {
-    const key = `${order.employeeName} (${order.employeeNumber})`;
-    acc[key] = (acc[key] || 0) + Number(order.totalAmount);
-    return acc;
-  }, {});
-
-  const topEmployees = Object.entries(employeeSpend)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5);
+  const download = (type: "csv" | "excel" | "pdf") => {
+    window.open(`http://localhost:5174/api/reports/export/${type}`, "_blank");
+  };
 
   return (
     <div>
-      <h1 className="page-title">📊 Reports</h1>
+      <h1 className="page-title">📊 Reports Dashboard</h1>
 
-      <div className="widgets">
-        <div className="widget-card">
-          <h3>Total Orders</h3>
-          <h1>{orders.length}</h1>
-        </div>
+      <div className="status-actions">
+        <button className="button" onClick={() => download("csv")}>
+          Export CSV
+        </button>
 
-        <div className="widget-card">
-          <h3>Total Sales</h3>
-          <h1>R{totalRevenue.toFixed(2)}</h1>
-        </div>
+        <button className="button" onClick={() => download("excel")}>
+          Export Excel
+        </button>
 
-        <div className="widget-card">
-          <h3>Delivered</h3>
-          <h1>{delivered}</h1>
-        </div>
-
-        <div className="widget-card">
-          <h3>Pending</h3>
-          <h1>{pending}</h1>
-        </div>
+        <button className="button button-danger" onClick={() => download("pdf")}>
+          Export PDF
+        </button>
       </div>
 
       <div className="grid grid-3">
         <div className="card">
-          <h2>Order Status Summary</h2>
+          <h2>Monthly Spending</h2>
 
-          <div className="report-row">
-            <span>Pending</span>
-            <strong>{pending}</strong>
-          </div>
-
-          <div className="report-row">
-            <span>Preparing</span>
-            <strong>{preparing}</strong>
-          </div>
-
-          <div className="report-row">
-            <span>Delivering</span>
-            <strong>{delivering}</strong>
-          </div>
-
-          <div className="report-row">
-            <span>Delivered</span>
-            <strong>{delivered}</strong>
-          </div>
+          {monthly.map(item => (
+            <div key={`${item.year}-${item.month}`} className="report-row">
+              <span>{item.year}-{item.month}</span>
+              <strong>R{Number(item.totalSpending).toFixed(2)}</strong>
+            </div>
+          ))}
         </div>
 
         <div className="card">
-          <h2>Top Employees by Spend</h2>
+          <h2>Top Employees - Most Orders</h2>
 
-          {topEmployees.length === 0 ? (
-            <p>No spending data.</p>
-          ) : (
-            topEmployees.map(([employee, amount]) => (
-              <div key={employee} className="report-row">
-                <span>{employee}</span>
-                <strong>R{amount.toFixed(2)}</strong>
-              </div>
-            ))
-          )}
+          {topEmployees.map(emp => (
+            <div key={emp.employeeNumber} className="report-row">
+              <span>{emp.employeeName}</span>
+              <strong>{emp.totalOrders} orders</strong>
+            </div>
+          ))}
         </div>
 
         <div className="card">
-          <h2>Recent Orders</h2>
+          <h2>Highest Spending Employees</h2>
 
-          {orders.slice(0, 5).map(order => (
-            <div key={order.id} className="report-row">
-              <span>#{order.id} - {order.employeeName}</span>
-              <strong>R{Number(order.totalAmount).toFixed(2)}</strong>
+          {highestSpending.map(emp => (
+            <div key={emp.employeeNumber} className="report-row">
+              <span>{emp.employeeName}</span>
+              <strong>R{Number(emp.totalSpending).toFixed(2)}</strong>
+            </div>
+          ))}
+        </div>
+
+        <div className="card">
+          <h2>Top Restaurants</h2>
+
+          {topRestaurants.map(rest => (
+            <div key={rest.restaurantName} className="report-row">
+              <span>{rest.restaurantName}</span>
+              <strong>{rest.totalOrders} orders</strong>
             </div>
           ))}
         </div>

@@ -160,6 +160,16 @@ export default function Restaurants() {
                 key={`${restaurant.name}-${restaurantIndex}`}
                 className="uber-restaurant-card"
               >
+                <div className="restaurant-image">
+                  <img
+                    src={
+                      restaurant.imageUrl ||
+                      `https://source.unsplash.com/600x300/?restaurant,food,${restaurant.name}`
+                    }
+                    alt={restaurant.name}
+                  />
+                </div>
+
                 <div className="restaurant-header">
                   <h2>{restaurant.name}</h2>
 
