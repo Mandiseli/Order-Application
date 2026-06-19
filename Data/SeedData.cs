@@ -29,6 +29,30 @@ public static class SeedData
             }
         );
 
+        if (!db.Users.Any())
+        {
+            db.Users.AddRange(
+                new User
+                {
+                    Username = "admin",
+                    Password = "admin123",
+                    Role = "Admin"
+                },
+                new User
+                {
+                    Username = "manager",
+                    Password = "manager123",
+                    Role = "Manager"
+                },
+                new User
+                {
+                    Username = "employee",
+                    Password = "employee123",
+                    Role = "Employee",
+                    EmployeeNumber = "EMP001"
+                }
+            );
+
         db.SaveChanges();
     }
 }

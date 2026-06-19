@@ -7,18 +7,20 @@ namespace Order_App.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly AuthService _auth;
+    private readonly AuthService _authService;
 
-    public AuthController(AuthService auth)
+    public AuthController(AuthService authService)
     {
-        _auth = auth;
+        _authService = authService;
     }
 
     [HttpPost("login")]
-    public IActionResult Login(string username, string password)
+    public async Task<IActionResult> Login(string username, string password)
     {
-        var token = _auth.Login(username, password);
-        if (token == null) return Unauthorized();
+        var token = await _authService.LoginAsync(username, password);
+
+        if (token == null)
+            return Unauthorized("Invalid username or password.");
 
         return Ok(new { token });
     }

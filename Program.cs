@@ -34,6 +34,8 @@ builder.Services.AddScoped<IDepositService, DepositService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddHttpClient<IGeoapifyService, GeoapifyService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<ISmsService, SmsService>();
 
 var jwtKey = builder.Configuration["Jwt:Key"];
 
