@@ -20,6 +20,7 @@ namespace Order_App.Data
         public DbSet<Transaction> Transactions => Set<Transaction>();
         public DbSet<RestaurantRating> RestaurantRatings => Set<RestaurantRating>();
         public DbSet<FavoriteRestaurant> FavoriteRestaurants => Set<FavoriteRestaurant>();
+        public DbSet<Driver> Drivers => Set<Driver>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -61,6 +62,13 @@ namespace Order_App.Data
                 .HasOne(f => f.Employee)
                 .WithMany()
                 .HasForeignKey(f => f.EmployeeId);
+
+            modelBuilder.Entity<Driver>()
+                .HasMany(d => d.Orders)
+                .WithOne(o => o.Driver)
+                .HasForeignKey(o => o.DriverId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
 
         }
     }
