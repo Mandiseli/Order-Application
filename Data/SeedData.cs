@@ -28,6 +28,8 @@ public static class SeedData
                     Balance = 500
                 }
             );
+
+            db.SaveChanges();
         }
 
         if (!db.Users.Any())
@@ -47,14 +49,28 @@ public static class SeedData
                 },
                 new User
                 {
-                    Username = "employee",
+                    Username = "sipho",
                     Password = "employee123",
                     Role = "Employee",
                     EmployeeNumber = "EMP001"
+                },
+                new User
+                {
+                    Username = "ayanda",
+                    Password = "employee123",
+                    Role = "Employee",
+                    EmployeeNumber = "EMP002"
+                },
+                new User
+                {
+                    Username = "thabo",
+                    Password = "employee123",
+                    Role = "Employee",
+                    EmployeeNumber = "EMP003"
                 }
             );
-        }
 
-        db.SaveChanges();
+            db.SaveChanges();
+        }
     }
 }

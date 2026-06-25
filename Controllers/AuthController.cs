@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Order_App.Dtos;
 using Order_App.Services;
 
 namespace Order_App.Controllers;
@@ -17,11 +18,32 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login(string username, string password)
     {
-        var token = await _authService.LoginAsync(username, password);
+        try
+        {
+            var token = await _authService.LoginAsync(username, password);
 
-        if (token == null)
-            return Unauthorized("Invalid username or password.");
+            if (token == null)
+                return Unauthorized("Invalid username or password.");
 
-        return Ok(new { token });
+            return Ok(new { token });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+    }
+
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+    {
+        try
+        {
+            var token = await _authService.RegisterEmployeeAsync(dto);
+            return Ok(new { token });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }
