@@ -6,14 +6,22 @@ import EmployeeSelector from "../components/EmployeeSelector";
 import { useCart } from "../hooks/useCart";
 import { getSampleMenu } from "../data/sampleMenus";
 import type { GeoRestaurant } from "../types";
+import { getUserFromToken } from "../utils/auth";
 
 export default function Restaurants() {
+  const user = getUserFromToken();
+
   const [restaurants, setRestaurants] = useState<GeoRestaurant[]>([]);
-  const [employeeNumber, setEmployeeNumber] = useState("");
+  const [selectedEmployeeNumber, setSelectedEmployeeNumber] = useState("");
   const [city, setCity] = useState("");
   const [loading, setLoading] = useState(false);
 
   const { cart, addToCart, removeFromCart, clearCart, total } = useCart();
+
+  const employeeNumber =
+    user?.role === "Employee"
+      ? user.employeeNumber
+      : selectedEmployeeNumber;
 
   const loadRestaurants = async (selectedCity: string) => {
     if (!selectedCity) return;
@@ -28,7 +36,7 @@ export default function Restaurants() {
       toast.success(`Restaurants loaded for ${selectedCity}`);
     } catch (error) {
       console.error(error);
-      toast.error("Failed to load restaurants");
+      toast.error("Failed to load restaurants. Check Geoapify API key/backend.");
     } finally {
       setLoading(false);
     }
@@ -107,7 +115,7 @@ export default function Restaurants() {
     try {
       await api.post("/orders/place-external", {
         employeeNumber,
-        items: cart.map((item) => ({
+        items: cart.map(item => ({
           itemName: item.name,
           price: item.price,
           quantity: item.quantity
@@ -127,9 +135,17 @@ export default function Restaurants() {
       <div className="uber-left">
         <h1 className="page-title">🍔 Restaurants Near You</h1>
 
-        <div className="card">
-          <EmployeeSelector onSelect={setEmployeeNumber} />
-        </div>
+        {user?.role !== "Employee" && (
+          <div className="card">
+            <EmployeeSelector onSelect={setSelectedEmployeeNumber} />
+          </div>
+        )}
+
+        {user?.role === "Employee" && (
+          <div className="card">
+            <strong>Logged in as:</strong> {user.employeeNumber}
+          </div>
+        )}
 
         <div className="card">
           <CitySelector onSelect={loadRestaurants} />
@@ -187,7 +203,7 @@ export default function Restaurants() {
                       ❤️ Favorite
                     </button>
 
-                    {[1, 2, 3, 4, 5].map((star) => (
+                    {[1, 2, 3, 4, 5].map(star => (
                       <button
                         key={star}
                         className="star-btn"
@@ -200,7 +216,7 @@ export default function Restaurants() {
                 </div>
 
                 <div className="menu-list">
-                  {menu.map((item) => (
+                  {menu.map(item => (
                     <div key={item.id} className="menu-item">
                       <div className="menu-info">
                         <strong>{item.name}</strong>
@@ -238,7 +254,7 @@ export default function Restaurants() {
           {cart.length === 0 ? (
             <p className="muted">Your cart is empty</p>
           ) : (
-            cart.map((item) => (
+            cart.map(item => (
               <div key={item.menuItemId} className="cart-item">
                 <div>
                   <strong>{item.name}</strong>

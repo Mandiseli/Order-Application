@@ -35,15 +35,23 @@ export default function EmployeeDashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const employeeNumber = user?.employeeNumber || "EMP001";
+  const employeeNumber = user?.employeeNumber || "";
 
   useEffect(() => {
+    if (!employeeNumber) {
+      toast.error("No employee number found for this account.");
+      return;
+    }
+
     loadDashboard();
-  }, []);
+  }, [employeeNumber]);
 
   const loadDashboard = async () => {
     try {
+      setLoading(true);
+
       const profileRes = await api.get(`/employeeProfile/${employeeNumber}`);
       setProfile(profileRes.data);
 
@@ -58,12 +66,15 @@ export default function EmployeeDashboard() {
     } catch (error) {
       console.error(error);
       toast.error("Failed to load employee dashboard");
+    } finally {
+      setLoading(false);
     }
   };
 
   const ordersThisMonth = orders.filter(o => {
     const date = new Date(o.orderDate);
     const now = new Date();
+
     return (
       date.getMonth() === now.getMonth() &&
       date.getFullYear() === now.getFullYear()
@@ -73,9 +84,19 @@ export default function EmployeeDashboard() {
   const favoriteRestaurant =
     favorites.length > 0 ? favorites[0].restaurantName : "No favorite yet";
 
+  if (!employeeNumber) {
+    return (
+      <div className="card">
+        This employee account is not linked to an employee number.
+      </div>
+    );
+  }
+
   return (
     <div>
       <h1 className="page-title">👤 Employee Dashboard</h1>
+
+      {loading && <div className="card">Loading dashboard...</div>}
 
       {profile && profile.currentBalance < 100 && (
         <div className="budget-alert">
@@ -84,43 +105,54 @@ export default function EmployeeDashboard() {
       )}
 
       {profile && (
-        <div className="widgets">
-          <div className="widget-card">
-            <h3>Current Balance</h3>
-            <h1>R{Number(profile.currentBalance).toFixed(2)}</h1>
+        <>
+          <div className="widgets">
+            <div className="widget-card">
+              <h3>Employee</h3>
+              <h1>{profile.name}</h1>
+            </div>
+
+            <div className="widget-card">
+              <h3>Current Balance</h3>
+              <h1>R{Number(profile.currentBalance).toFixed(2)}</h1>
+            </div>
+
+            <div className="widget-card">
+              <h3>Orders This Month</h3>
+              <h1>{ordersThisMonth}</h1>
+            </div>
+
+            <div className="widget-card">
+              <h3>Last Order</h3>
+              <h1>
+                {profile.lastOrderDate
+                  ? new Date(profile.lastOrderDate).toLocaleDateString()
+                  : "None"}
+              </h1>
+            </div>
+
+            <div className="widget-card">
+              <h3>Favorite Restaurant</h3>
+              <h1>{favoriteRestaurant}</h1>
+            </div>
           </div>
 
-          <div className="widget-card">
-            <h3>Orders This Month</h3>
-            <h1>{ordersThisMonth}</h1>
-          </div>
+          <div className="card">
+            <h2>🤖 Recommended For You</h2>
 
-          <div className="widget-card">
-            <h3>Last Order</h3>
-            <h1>
-              {profile.lastOrderDate
-                ? new Date(profile.lastOrderDate).toLocaleDateString()
-                : "None"}
-            </h1>
+            {recommendations.length === 0 ? (
+              <p>No recommendations yet.</p>
+            ) : (
+              recommendations.map(item => (
+                <div key={item.itemName} className="report-row">
+                  <span>{item.itemName}</span>
+                  <strong>R{Number(item.averagePrice).toFixed(2)}</strong>
+                </div>
+              ))
+            )}
           </div>
-
-          <div className="widget-card">
-            <h3>Favorite Restaurant</h3>
-            <h1>{favoriteRestaurant}</h1>
-          </div>
-        </div>
+        </>
       )}
-
-      <div className="card">
-        <h2>🤖 Recommended For You</h2>
-
-        {recommendations.map(item => (
-          <div key={item.itemName} className="report-row">
-            <span>{item.itemName}</span>
-            <strong>R{Number(item.averagePrice).toFixed(2)}</strong>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

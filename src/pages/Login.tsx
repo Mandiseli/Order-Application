@@ -2,6 +2,7 @@ import { useState } from "react";
 import { api } from "../api/api";
 import { toast } from "react-toastify";
 import { getUserFromToken } from "../utils/auth";
+import { Link } from "react-router-dom";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -32,27 +33,33 @@ export default function Login() {
   };
 
   return (
-    <div className="card">
-      <h2>Login</h2>
+    <div className="auth-page">
+      <div className="card auth-card">
+        <h2>Login</h2>
 
-      <input
-        className="input"
-        value={username}
-        onChange={e => setUsername(e.target.value)}
-        placeholder="Username"
-      />
+        <input
+          className="input"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="Username"
+        />
 
-      <input
-        className="input"
-        type="password"
-        value={password}
-        onChange={e => setPassword(e.target.value)}
-        placeholder="Password"
-      />
+        <input
+          className="input"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
+        />
 
-      <button className="button" onClick={login}>
-        Login
-      </button>
+        <button className="button" onClick={login}>
+          Login
+        </button>
+
+        <p className="auth-link">
+          New employee? <Link to="/signup">Create account</Link>
+        </p>
+      </div>
     </div>
   );
 }

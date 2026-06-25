@@ -16,8 +16,15 @@ export function getUserFromToken() {
     const payload = JSON.parse(atob(token.split(".")[1]));
 
     return {
-      username: payload.unique_name || payload.name || "",
-      role: payload.role || "",
+      username:
+        payload.unique_name ||
+        payload.name ||
+        payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] ||
+        "",
+      role:
+        payload.role ||
+        payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
+        "",
       employeeNumber: payload.employeeNumber || ""
     };
   } catch {
