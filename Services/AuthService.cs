@@ -1,5 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -20,68 +21,90 @@ public class AuthService
         _config = config;
     }
 
-    public async Task<string?> LoginAsync(string username, string password)
+    public async Task<object> LoginAsync(LoginDto dto)
     {
-        var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Username == username && u.Password == password);
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == dto.Username);
 
-        if (user == null)
-            return null;
+        if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+            throw new Exception("Invalid username or password.");
 
-        return GenerateToken(user);
+        user.RefreshToken = GenerateRefreshToken();
+        user.RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(7);
+
+        await _context.SaveChangesAsync();
+
+        return new
+        {
+            accessToken = GenerateAccessToken(user),
+            refreshToken = user.RefreshToken,
+            role = user.Role,
+            employeeNumber = user.EmployeeNumber
+        };
     }
 
-    public async Task<string> RegisterEmployeeAsync(RegisterDto dto)
+    public async Task<object> RegisterEmployeeAsync(RegisterDto dto)
     {
-        if (string.IsNullOrWhiteSpace(dto.Username))
-            throw new Exception("Username is required.");
-
-        if (string.IsNullOrWhiteSpace(dto.Password))
-            throw new Exception("Password is required.");
-
-        if (string.IsNullOrWhiteSpace(dto.EmployeeNumber))
-            throw new Exception("Employee number is required.");
-
         var employee = await _context.Employees
             .FirstOrDefaultAsync(e => e.EmployeeNumber == dto.EmployeeNumber);
 
         if (employee == null)
             throw new Exception("Employee number does not exist.");
 
-        var usernameExists = await _context.Users
-            .AnyAsync(u => u.Username == dto.Username);
-
-        if (usernameExists)
+        if (await _context.Users.AnyAsync(u => u.Username == dto.Username))
             throw new Exception("Username already exists.");
 
-        var employeeAlreadyLinked = await _context.Users
-            .AnyAsync(u => u.EmployeeNumber == dto.EmployeeNumber);
-
-        if (employeeAlreadyLinked)
-            throw new Exception("This employee number already has an account.");
+        if (await _context.Users.AnyAsync(u => u.EmployeeNumber == dto.EmployeeNumber))
+            throw new Exception("Employee already has an account.");
 
         var user = new User
         {
             Username = dto.Username,
-            Password = dto.Password,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
             Role = "Employee",
-            EmployeeNumber = dto.EmployeeNumber
+            EmployeeNumber = dto.EmployeeNumber,
+            RefreshToken = GenerateRefreshToken(),
+            RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(7)
         };
 
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        return GenerateToken(user);
+        return new
+        {
+            accessToken = GenerateAccessToken(user),
+            refreshToken = user.RefreshToken,
+            role = user.Role,
+            employeeNumber = user.EmployeeNumber
+        };
     }
 
-    private string GenerateToken(User user)
+    public async Task<object> RefreshAsync(string refreshToken)
     {
-        var key = _config["Jwt:Key"];
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
 
-        if (string.IsNullOrWhiteSpace(key))
-            throw new Exception("JWT Key is missing.");
+        if (user == null || user.RefreshTokenExpiresAt < DateTime.UtcNow)
+            throw new Exception("Invalid or expired refresh token.");
 
-        var claims = new List<Claim>
+        user.RefreshToken = GenerateRefreshToken();
+        user.RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(7);
+
+        await _context.SaveChangesAsync();
+
+        return new
+        {
+            accessToken = GenerateAccessToken(user),
+            refreshToken = user.RefreshToken,
+            role = user.Role,
+            employeeNumber = user.EmployeeNumber
+        };
+    }
+
+    private string GenerateAccessToken(User user)
+    {
+        var key = _config["Jwt:Key"] ?? throw new Exception("JWT key missing.");
+
+        var claims = new[]
         {
             new Claim(ClaimTypes.Name, user.Username),
             new Claim(ClaimTypes.Role, user.Role),
@@ -89,19 +112,22 @@ public class AuthService
             new Claim("employeeNumber", user.EmployeeNumber ?? "")
         };
 
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
-
         var credentials = new SigningCredentials(
-            securityKey,
+            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
             SecurityAlgorithms.HmacSha256
         );
 
         var token = new JwtSecurityToken(
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(8),
+            expires: DateTime.UtcNow.AddMinutes(15),
             signingCredentials: credentials
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    private static string GenerateRefreshToken()
+    {
+        return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
     }
 }

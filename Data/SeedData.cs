@@ -38,33 +38,33 @@ public static class SeedData
                 new User
                 {
                     Username = "admin",
-                    Password = "admin123",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
                     Role = "Admin"
                 },
                 new User
                 {
                     Username = "manager",
-                    Password = "manager123",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("manager123"),
                     Role = "Manager"
                 },
                 new User
                 {
                     Username = "sipho",
-                    Password = "employee123",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("employee123"),
                     Role = "Employee",
                     EmployeeNumber = "EMP001"
                 },
                 new User
                 {
                     Username = "ayanda",
-                    Password = "employee123",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("employee123"),
                     Role = "Employee",
                     EmployeeNumber = "EMP002"
                 },
                 new User
                 {
                     Username = "thabo",
-                    Password = "employee123",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("employee123"),
                     Role = "Employee",
                     EmployeeNumber = "EMP003"
                 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Order_App.Dtos;
 using Order_App.Services;
 
@@ -15,6 +16,7 @@ public class OrdersController : ControllerBase
         _orderService = orderService;
     }
 
+    [Authorize(Roles = "Employee,Admin")]
     [HttpPost("place-external")]
     public async Task<IActionResult> PlaceExternalOrder([FromBody] ExternalOrderDto dto)
     {
@@ -33,6 +35,7 @@ public class OrdersController : ControllerBase
         }
     }
 
+    [Authorize(Roles = "Employee,Admin")]
     [HttpPost("reorder")]
     public async Task<IActionResult> ReOrder([FromBody] ReOrderDto dto)
     {
@@ -51,6 +54,7 @@ public class OrdersController : ControllerBase
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("assign-driver")]
     public async Task<IActionResult> AssignDriver([FromBody] AssignDriverDto dto)
     {
@@ -69,6 +73,26 @@ public class OrdersController : ControllerBase
         }
     }
 
+    [Authorize(Roles = "Employee,Admin")]
+    [HttpPut("{id:int}/cancel")]
+    public async Task<IActionResult> CancelOrder(int id)
+    {
+        try
+        {
+            var order = await _orderService.CancelOrderAsync(id);
+
+            if (order == null)
+                return NotFound("Order not found.");
+
+            return Ok(ToOrderDto(order));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [Authorize(Roles = "Admin,Manager")]
     [HttpGet("all")]
     public async Task<IActionResult> GetAllOrders()
     {
@@ -83,6 +107,7 @@ public class OrdersController : ControllerBase
         }
     }
 
+    [Authorize(Roles = "Employee,Admin,Manager")]
     [HttpGet("employee/{employeeNumber}")]
     public async Task<IActionResult> GetOrdersForEmployee(string employeeNumber)
     {
@@ -97,6 +122,7 @@ public class OrdersController : ControllerBase
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id:int}/status")]
     public async Task<IActionResult> UpdateStatus(int id, [FromBody] string status)
     {
@@ -123,15 +149,12 @@ public class OrdersController : ControllerBase
             employeeId = order.EmployeeId,
             employeeName = order.Employee?.Name ?? "",
             employeeNumber = order.Employee?.EmployeeNumber ?? "",
-
             driverId = order.DriverId,
             driverName = order.Driver?.FullName ?? "Not Assigned",
-
             orderDate = order.OrderDate,
             totalAmount = order.TotalAmount,
             status = order.Status,
             estimatedDeliveryTime = order.EstimatedDeliveryTime ?? GetEstimatedDeliveryTime(order.Status),
-
             items = order.Items.Select(i => new
             {
                 id = i.Id,
@@ -151,7 +174,8 @@ public class OrdersController : ControllerBase
             "Ready For Pickup" => "15 minutes",
             "Out For Delivery" => "10 minutes",
             "Delivered" => "Delivered",
-            _ => "Pending"
+            "Cancelled" => "Cancelled",
+            _ => "45 minutes"
         };
     }
 }

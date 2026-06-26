@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Order_App.Data;
 using Order_App.Models;
@@ -9,37 +10,69 @@ namespace Order_App.Controllers;
 [Route("api/[controller]")]
 public class MenuItemsController : ControllerBase
 {
-    private readonly ApplicationDbContext _db;
+    private readonly ApplicationDbContext _context;
 
-    public MenuItemsController(ApplicationDbContext db) => _db = db;
+    public MenuItemsController(ApplicationDbContext context)
+    {
+        _context = context;
+    }
 
-    // Create a menu item
+    [Authorize(Roles = "Admin")]
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] MenuItem item)
+    public async Task<IActionResult> Create(MenuItem item)
     {
-        _db.MenuItems.Add(item);
-        await _db.SaveChangesAsync();
-        return Created($"api/restaurants/{item.RestaurantId}/menu", item);
+        _context.MenuItems.Add(item);
+        await _context.SaveChangesAsync();
+        return Ok(item);
     }
 
-    // Update a menu item
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update(int id, [FromBody] MenuItem item)
+    public async Task<IActionResult> Update(int id, MenuItem item)
     {
-        if (id != item.Id) return BadRequest();
-        _db.Entry(item).State = EntityState.Modified;
-        await _db.SaveChangesAsync();
-        return NoContent();
+        var existing = await _context.MenuItems.FindAsync(id);
+
+        if (existing == null)
+            return NotFound();
+
+        existing.Name = item.Name;
+        existing.Description = item.Description;
+        existing.Price = item.Price;
+        existing.RestaurantId = item.RestaurantId;
+        existing.IsAvailable = item.IsAvailable;
+
+        await _context.SaveChangesAsync();
+
+        return Ok(existing);
     }
 
-    // Delete a menu item
+    [Authorize(Roles = "Admin")]
+    [HttpPut("{id:int}/availability")]
+    public async Task<IActionResult> Availability(int id, [FromBody] bool isAvailable)
+    {
+        var item = await _context.MenuItems.FindAsync(id);
+
+        if (item == null)
+            return NotFound();
+
+        item.IsAvailable = isAvailable;
+        await _context.SaveChangesAsync();
+
+        return Ok(item);
+    }
+
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var mi = await _db.MenuItems.FindAsync(id);
-        if (mi == null) return NotFound();
-        _db.MenuItems.Remove(mi);
-        await _db.SaveChangesAsync();
+        var item = await _context.MenuItems.FindAsync(id);
+
+        if (item == null)
+            return NotFound();
+
+        _context.MenuItems.Remove(item);
+        await _context.SaveChangesAsync();
+
         return NoContent();
     }
 }

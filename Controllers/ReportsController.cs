@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Order_App.Data;
@@ -7,6 +8,7 @@ namespace Order_App.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = "Admin,Manager")]
 public class ReportsController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
@@ -97,7 +99,9 @@ public class ReportsController : ControllerBase
             .Select(i =>
             {
                 var parts = i.ItemName.Split(" - ");
-                var restaurantName = parts.Length > 1 ? parts[0] : "Unknown Restaurant";
+                var restaurantName = parts.Length > 1
+                    ? parts[0]
+                    : "Unknown Restaurant";
 
                 return new
                 {
@@ -123,6 +127,63 @@ public class ReportsController : ControllerBase
     [HttpGet("export/csv")]
     public async Task<IActionResult> ExportCsv()
     {
+        var bytes = await BuildCsvBytes();
+
+        return File(
+            bytes,
+            "text/csv",
+            "cafeteria-orders-report.csv"
+        );
+    }
+
+    [HttpGet("export/excel")]
+    public async Task<IActionResult> ExportExcel()
+    {
+        var bytes = await BuildCsvBytes();
+
+        return File(
+            bytes,
+            "application/vnd.ms-excel",
+            "cafeteria-orders-report.xls"
+        );
+    }
+
+    [HttpGet("export/pdf")]
+    public async Task<IActionResult> ExportPdf()
+    {
+        var orders = await _context.Orders
+            .Include(o => o.Employee)
+            .Include(o => o.Driver)
+            .OrderByDescending(o => o.OrderDate)
+            .ToListAsync();
+
+        var text = new StringBuilder();
+
+        text.AppendLine("EMPLOYEE CAFETERIA ORDERS REPORT");
+        text.AppendLine("--------------------------------");
+        text.AppendLine();
+
+        foreach (var o in orders)
+        {
+            text.AppendLine($"Order #{o.Id}");
+            text.AppendLine($"Employee: {o.Employee?.Name ?? "Unknown"}");
+            text.AppendLine($"Employee Number: {o.Employee?.EmployeeNumber ?? ""}");
+            text.AppendLine($"Driver: {o.Driver?.FullName ?? "Not Assigned"}");
+            text.AppendLine($"Status: {o.Status}");
+            text.AppendLine($"Total: R{o.TotalAmount}");
+            text.AppendLine($"Date: {o.OrderDate:yyyy-MM-dd HH:mm}");
+            text.AppendLine("--------------------------------");
+        }
+
+        return File(
+            Encoding.UTF8.GetBytes(text.ToString()),
+            "application/pdf",
+            "cafeteria-orders-report.pdf"
+        );
+    }
+
+    private async Task<byte[]> BuildCsvBytes()
+    {
         var orders = await _context.Orders
             .Include(o => o.Employee)
             .Include(o => o.Driver)
@@ -141,60 +202,12 @@ public class ReportsController : ControllerBase
                 $"{Escape(o.Employee?.EmployeeNumber)}," +
                 $"{Escape(o.Driver?.FullName)}," +
                 $"{o.OrderDate:yyyy-MM-dd HH:mm}," +
-                $"{o.Status}," +
+                $"{Escape(o.Status)}," +
                 $"{o.TotalAmount}"
             );
         }
 
-        return File(
-            Encoding.UTF8.GetBytes(csv.ToString()),
-            "text/csv",
-            "cafeteria-orders-report.csv"
-        );
-    }
-
-    [HttpGet("export/excel")]
-    public async Task<IActionResult> ExportExcel()
-    {
-        var csvResult = await ExportCsv() as FileContentResult;
-
-        return File(
-            csvResult!.FileContents,
-            "application/vnd.ms-excel",
-            "cafeteria-orders-report.xls"
-        );
-    }
-
-    [HttpGet("export/pdf")]
-    public async Task<IActionResult> ExportPdf()
-    {
-        var orders = await _context.Orders
-            .Include(o => o.Employee)
-            .Include(o => o.Driver)
-            .OrderByDescending(o => o.OrderDate)
-            .ToListAsync();
-
-        var text = new StringBuilder();
-        text.AppendLine("EMPLOYEE CAFETERIA ORDERS REPORT");
-        text.AppendLine("--------------------------------");
-        text.AppendLine();
-
-        foreach (var o in orders)
-        {
-            text.AppendLine($"Order #{o.Id}");
-            text.AppendLine($"Employee: {o.Employee?.Name}");
-            text.AppendLine($"Driver: {o.Driver?.FullName ?? "Not Assigned"}");
-            text.AppendLine($"Status: {o.Status}");
-            text.AppendLine($"Total: R{o.TotalAmount}");
-            text.AppendLine($"Date: {o.OrderDate:yyyy-MM-dd HH:mm}");
-            text.AppendLine("--------------------------------");
-        }
-
-        return File(
-            Encoding.UTF8.GetBytes(text.ToString()),
-            "application/pdf",
-            "cafeteria-orders-report.pdf"
-        );
+        return Encoding.UTF8.GetBytes(csv.ToString());
     }
 
     private static string Escape(string? value)
@@ -202,6 +215,9 @@ public class ReportsController : ControllerBase
         if (string.IsNullOrWhiteSpace(value))
             return "";
 
-        return value.Replace(",", " ");
+        return value
+            .Replace(",", " ")
+            .Replace(Environment.NewLine, " ")
+            .Trim();
     }
 }

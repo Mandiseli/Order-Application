@@ -1,19 +1,29 @@
-﻿namespace Order_App.Services;
+﻿using Twilio;
+using Twilio.Rest.Api.V2010.Account;
+using Twilio.Types;
+
+namespace Order_App.Services;
 
 public class SmsService : ISmsService
 {
-    private readonly ILogger<SmsService> _logger;
+    private readonly IConfiguration _config;
 
-    public SmsService(ILogger<SmsService> logger)
+    public SmsService(IConfiguration config)
     {
-        _logger = logger;
+        _config = config;
     }
 
     public Task SendSmsAsync(string phoneNumber, string message)
     {
-        _logger.LogInformation("SMS SENT TO: {PhoneNumber} | MESSAGE: {Message}",
-            phoneNumber, message);
+        TwilioClient.Init(
+            _config["Sms:AccountSid"],
+            _config["Sms:AuthToken"]
+        );
 
-        return Task.CompletedTask;
+        return MessageResource.CreateAsync(
+            body: message,
+            from: new PhoneNumber(_config["Sms:From"]),
+            to: new PhoneNumber(phoneNumber)
+        );
     }
 }

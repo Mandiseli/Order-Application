@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Order_App.Data;
 using Order_App.Dtos;
@@ -8,6 +9,7 @@ namespace Order_App.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = "Admin")]
 public class DriversController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
@@ -35,22 +37,31 @@ public class DriversController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateDriver(CreateDriverDto dto)
+    public async Task<IActionResult> CreateDriver([FromBody] CreateDriverDto dto)
     {
+        if (dto == null)
+            return BadRequest("Invalid request.");
+
         if (string.IsNullOrWhiteSpace(dto.FullName))
             return BadRequest("Driver name is required.");
 
         var driver = new Driver
         {
-            FullName = dto.FullName,
-            PhoneNumber = dto.PhoneNumber,
+            FullName = dto.FullName.Trim(),
+            PhoneNumber = dto.PhoneNumber?.Trim() ?? "",
             IsAvailable = true
         };
 
         _context.Drivers.Add(driver);
         await _context.SaveChangesAsync();
 
-        return Ok(driver);
+        return Ok(new
+        {
+            driver.Id,
+            driver.FullName,
+            driver.PhoneNumber,
+            driver.IsAvailable
+        });
     }
 
     [HttpPut("{id:int}/availability")]
@@ -64,6 +75,26 @@ public class DriversController : ControllerBase
         driver.IsAvailable = isAvailable;
         await _context.SaveChangesAsync();
 
-        return Ok(driver);
+        return Ok(new
+        {
+            driver.Id,
+            driver.FullName,
+            driver.PhoneNumber,
+            driver.IsAvailable
+        });
+    }
+
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeleteDriver(int id)
+    {
+        var driver = await _context.Drivers.FindAsync(id);
+
+        if (driver == null)
+            return NotFound("Driver not found.");
+
+        _context.Drivers.Remove(driver);
+        await _context.SaveChangesAsync();
+
+        return NoContent();
     }
 }

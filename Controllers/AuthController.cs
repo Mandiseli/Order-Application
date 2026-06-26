@@ -8,28 +8,23 @@ namespace Order_App.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly AuthService _authService;
+    private readonly AuthService _auth;
 
-    public AuthController(AuthService authService)
+    public AuthController(AuthService auth)
     {
-        _authService = authService;
+        _auth = auth;
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login(string username, string password)
+    public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
         try
         {
-            var token = await _authService.LoginAsync(username, password);
-
-            if (token == null)
-                return Unauthorized("Invalid username or password.");
-
-            return Ok(new { token });
+            return Ok(await _auth.LoginAsync(dto));
         }
         catch (Exception ex)
         {
-            return StatusCode(500, ex.Message);
+            return Unauthorized(ex.Message);
         }
     }
 
@@ -38,12 +33,24 @@ public class AuthController : ControllerBase
     {
         try
         {
-            var token = await _authService.RegisterEmployeeAsync(dto);
-            return Ok(new { token });
+            return Ok(await _auth.RegisterEmployeeAsync(dto));
         }
         catch (Exception ex)
         {
             return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshTokenDto dto)
+    {
+        try
+        {
+            return Ok(await _auth.RefreshAsync(dto.RefreshToken));
+        }
+        catch (Exception ex)
+        {
+            return Unauthorized(ex.Message);
         }
     }
 }

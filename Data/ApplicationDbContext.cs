@@ -21,6 +21,7 @@ namespace Order_App.Data
         public DbSet<RestaurantRating> RestaurantRatings => Set<RestaurantRating>();
         public DbSet<FavoriteRestaurant> FavoriteRestaurants => Set<FavoriteRestaurant>();
         public DbSet<Driver> Drivers => Set<Driver>();
+        public DbSet<PendingDeposit> PendingDeposits => Set<PendingDeposit>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

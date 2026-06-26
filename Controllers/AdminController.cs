@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Order_App.Services;
 
 namespace Order_App.Controllers;
 
 [ApiController]
+[Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
 public class AdminController : ControllerBase
 {
@@ -19,23 +21,7 @@ public class AdminController : ControllerBase
     {
         var orders = await _service.GetAllOrdersAsync();
 
-        var result = orders.Select(o => new
-        {
-            id = o.Id,
-            employeeId = o.EmployeeId,
-            employeeName = o.Employee?.Name ?? "",
-            employeeNumber = o.Employee?.EmployeeNumber ?? "",
-            orderDate = o.OrderDate,
-            totalAmount = o.TotalAmount,
-            status = o.Status,
-            items = o.Items.Select(i => new
-            {
-                id = i.Id,
-                itemName = i.ItemName,
-                quantity = i.Quantity,
-                unitPriceAtTimeOfOrder = i.UnitPriceAtTimeOfOrder
-            }).ToList()
-        }).ToList();
+        var result = orders.Select(ToOrderDto).ToList();
 
         return Ok(result);
     }
@@ -47,23 +33,8 @@ public class AdminController : ControllerBase
 
         var result = orders
             .Where(o => o.Status == "Pending")
-            .Select(o => new
-            {
-                id = o.Id,
-                employeeId = o.EmployeeId,
-                employeeName = o.Employee?.Name ?? "",
-                employeeNumber = o.Employee?.EmployeeNumber ?? "",
-                orderDate = o.OrderDate,
-                totalAmount = o.TotalAmount,
-                status = o.Status,
-                items = o.Items.Select(i => new
-                {
-                    id = i.Id,
-                    itemName = i.ItemName,
-                    quantity = i.Quantity,
-                    unitPriceAtTimeOfOrder = i.UnitPriceAtTimeOfOrder
-                }).ToList()
-            }).ToList();
+            .Select(ToOrderDto)
+            .ToList();
 
         return Ok(result);
     }
@@ -75,18 +46,52 @@ public class AdminController : ControllerBase
         {
             var order = await _service.UpdateOrderStatusAsync(id, status);
 
-            return Ok(new
-            {
-                id = order!.Id,
-                employeeId = order.EmployeeId,
-                totalAmount = order.TotalAmount,
-                status = order.Status,
-                orderDate = order.OrderDate
-            });
+            if (order == null)
+                return NotFound("Order not found.");
+
+            return Ok(ToOrderDto(order));
         }
         catch (Exception ex)
         {
             return BadRequest(ex.Message);
         }
+    }
+
+    private static object ToOrderDto(Order_App.Models.Order order)
+    {
+        return new
+        {
+            id = order.Id,
+            employeeId = order.EmployeeId,
+            employeeName = order.Employee?.Name ?? "",
+            employeeNumber = order.Employee?.EmployeeNumber ?? "",
+            driverId = order.DriverId,
+            driverName = order.Driver?.FullName ?? "Not Assigned",
+            orderDate = order.OrderDate,
+            totalAmount = order.TotalAmount,
+            status = order.Status,
+            estimatedDeliveryTime = order.EstimatedDeliveryTime ?? GetEstimatedDeliveryTime(order.Status),
+            items = order.Items.Select(i => new
+            {
+                id = i.Id,
+                itemName = i.ItemName,
+                quantity = i.Quantity,
+                unitPriceAtTimeOfOrder = i.UnitPriceAtTimeOfOrder
+            }).ToList()
+        };
+    }
+
+    private static string GetEstimatedDeliveryTime(string status)
+    {
+        return status switch
+        {
+            "Pending" => "45 minutes",
+            "Preparing" => "30 minutes",
+            "Ready For Pickup" => "15 minutes",
+            "Out For Delivery" => "10 minutes",
+            "Delivered" => "Delivered",
+            "Cancelled" => "Cancelled",
+            _ => "45 minutes"
+        };
     }
 }
