@@ -31,7 +31,8 @@ export default function Signup() {
         employeeNumber
       });
 
-      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("accessToken", res.data.accessToken);
+      localStorage.setItem("refreshToken", res.data.refreshToken);
 
       toast.success("Account created successfully");
       window.location.href = "/employee-dashboard";

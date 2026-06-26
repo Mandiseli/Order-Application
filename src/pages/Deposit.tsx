@@ -1,117 +1,69 @@
 import { useState } from "react";
-import { toast } from "react-toastify";
-
 import { api } from "../api/api";
-
 import EmployeeSelector from "../components/EmployeeSelector";
-import LoadingSpinner from "../components/LoadingSpinner";
+import { toast } from "react-toastify";
+import { getUserFromToken } from "../utils/auth";
 
 export default function Deposit() {
+  const user = getUserFromToken();
 
-  const [employeeNumber, setEmployeeNumber] = useState("");
+  const [selectedEmployeeNumber, setSelectedEmployeeNumber] = useState("");
   const [amount, setAmount] = useState(0);
 
-  const [loading, setLoading] = useState(false);
+  const employeeNumber =
+    user?.role === "Employee"
+      ? user.employeeNumber
+      : selectedEmployeeNumber;
 
-  const deposit = async () => {
-
+  const requestDeposit = async () => {
     if (!employeeNumber) {
-      toast.error("Please select employee");
+      toast.error("Select an employee");
       return;
     }
 
     if (amount <= 0) {
-      toast.error("Amount must be greater than 0");
+      toast.error("Amount must be greater than zero");
       return;
     }
 
     try {
-
-      setLoading(true);
-
-      await api.post("/deposits", null, {
-        params: {
-          employeeNumber,
-          amount
-        }
+      await api.post("/deposits/request", {
+        employeeNumber,
+        amount
       });
 
-      toast.success("Deposit successful");
-
+      toast.success("Deposit request submitted for approval");
       setAmount(0);
-
-    } catch {
-
-      toast.error("Deposit failed");
-
-    } finally {
-
-      setLoading(false);
-
+    } catch (error: any) {
+      toast.error(error.response?.data || "Deposit request failed");
     }
   };
 
   return (
     <div className="card">
+      <h2>💰 Request Deposit</h2>
 
-      <h1 className="page-title">
-        💰 Deposit Funds
-      </h1>
+      {user?.role !== "Employee" && (
+        <EmployeeSelector onSelect={setSelectedEmployeeNumber} />
+      )}
 
-      <div
-        style={{
-          marginTop: "20px"
-        }}
-      >
+      {user?.role === "Employee" && (
+        <p>
+          <strong>Employee:</strong> {user.employeeNumber}
+        </p>
+      )}
 
-        <label>
-          Select Employee
-        </label>
+      <input
+        className="input"
+        type="number"
+        value={amount || ""}
+        placeholder="Enter amount"
+        onChange={(e) => setAmount(Number(e.target.value))}
+      />
 
-        <EmployeeSelector onSelect={setEmployeeNumber} />
-
-      </div>
-
-      <div
-        style={{
-          marginTop: "20px"
-        }}
-      >
-
-        <label>
-          Deposit Amount
-        </label>
-
-        <input
-          className="input"
-          type="number"
-          value={amount}
-          placeholder="Enter amount"
-          onChange={e => setAmount(Number(e.target.value))}
-        />
-
-      </div>
-
-      <div
-        style={{
-          marginTop: "20px"
-        }}
-      >
-
-        <button
-          className="button"
-          onClick={deposit}
-          disabled={loading}
-        >
-
-          {loading ? "Processing..." : "Deposit"}
-
-        </button>
-
-      </div>
-
-      {loading && <LoadingSpinner />}
-
+      <button className="button button-success" onClick={requestDeposit}>
+        Submit Deposit Request
+      </button>
     </div>
   );
 }

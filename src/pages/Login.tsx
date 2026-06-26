@@ -9,12 +9,19 @@ export default function Login() {
   const [password, setPassword] = useState("");
 
   const login = async () => {
+    if (!username.trim() || !password.trim()) {
+      toast.error("Username and password are required");
+      return;
+    }
+
     try {
-      const res = await api.post("/auth/login", null, {
-        params: { username, password }
+      const res = await api.post("/auth/login", {
+        username,
+        password
       });
 
-      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("accessToken", res.data.accessToken);
+      localStorage.setItem("refreshToken", res.data.refreshToken);
 
       const user = getUserFromToken();
 
@@ -27,8 +34,8 @@ export default function Login() {
       } else {
         window.location.href = "/employee-dashboard";
       }
-    } catch {
-      toast.error("Invalid username or password");
+    } catch (error: any) {
+      toast.error(error.response?.data || "Invalid username or password");
     }
   };
 

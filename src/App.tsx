@@ -6,13 +6,15 @@ import Deposit from "./pages/Deposit";
 import Restaurants from "./pages/Restaurants";
 import Orders from "./pages/Orders";
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import AdminDashboard from "./pages/AdminDashboard";
 import Reports from "./pages/Reports";
 import TransactionsPage from "./pages/Transactions";
 import AddEmployee from "./pages/AddEmployee";
 import EmployeeProfile from "./pages/EmployeeProfile";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
-import Signup from "./pages/Signup";
+import DepositApprovals from "./pages/DepositApprovals";
+import MenuAdmin from "./pages/MenuAdmin";
 
 import MainLayout from "./layouts/MainLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -29,8 +31,8 @@ function App() {
     <BrowserRouter>
       <MainLayout>
         <Routes>
-          <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
 
           <Route
             path="/"
@@ -60,9 +62,27 @@ function App() {
           />
 
           <Route
+            path="/deposit-approvals"
+            element={
+              <ProtectedRoute roles={["Admin"]}>
+                <DepositApprovals />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/menu-admin"
+            element={
+              <ProtectedRoute roles={["Admin"]}>
+                <MenuAdmin />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
             path="/restaurants"
             element={
-              <ProtectedRoute roles={["Employee", "Admin"]}>
+              <ProtectedRoute roles={["Admin", "Employee"]}>
                 <Restaurants />
               </ProtectedRoute>
             }
@@ -107,7 +127,7 @@ function App() {
           <Route
             path="/employee-profile"
             element={
-              <ProtectedRoute roles={["Employee", "Admin"]}>
+              <ProtectedRoute roles={["Admin", "Employee"]}>
                 <EmployeeProfile />
               </ProtectedRoute>
             }
@@ -116,7 +136,7 @@ function App() {
           <Route
             path="/employee-dashboard"
             element={
-              <ProtectedRoute roles={["Employee", "Admin"]}>
+              <ProtectedRoute roles={["Admin", "Employee"]}>
                 <EmployeeDashboard />
               </ProtectedRoute>
             }

@@ -12,6 +12,8 @@ export default function MainLayout({ children }: Props) {
   const [open, setOpen] = useState(false);
   const user = getUserFromToken();
 
+  const closeMenu = () => setOpen(false);
+
   return (
     <div className="layout">
       <aside className={`sidebar ${open ? "show" : ""}`}>
@@ -20,33 +22,48 @@ export default function MainLayout({ children }: Props) {
         <nav>
           {user?.role === "Admin" && (
             <>
-              <Link to="/">Employees</Link>
-              <Link to="/employees/add">Add Employee</Link>
-              <Link to="/admin">Admin</Link>
-              <Link to="/transactions">Transactions</Link>
+              <Link to="/" onClick={closeMenu}>Employees</Link>
+              <Link to="/employees/add" onClick={closeMenu}>Add Employee</Link>
+              <Link to="/admin" onClick={closeMenu}>Admin</Link>
+              <Link to="/deposit-approvals" onClick={closeMenu}>Deposit Approvals</Link>
+              <Link to="/menu-admin" onClick={closeMenu}>Menu Admin</Link>
+              <Link to="/transactions" onClick={closeMenu}>Transactions</Link>
             </>
           )}
 
           {(user?.role === "Admin" || user?.role === "Manager") && (
-            <Link to="/reports">Reports</Link>
+            <Link to="/reports" onClick={closeMenu}>Reports</Link>
           )}
 
           {(user?.role === "Admin" || user?.role === "Employee") && (
             <>
-              <Link to="/deposit">Deposits</Link>
-              <Link to="/restaurants">Restaurants</Link>
-              <Link to="/employee-dashboard">Employee Dashboard</Link>
-              <Link to="/employee-profile">Employee Profile</Link>
+              <Link to="/deposit" onClick={closeMenu}>Deposits</Link>
+              <Link to="/restaurants" onClick={closeMenu}>Restaurants</Link>
+              <Link to="/employee-dashboard" onClick={closeMenu}>Employee Dashboard</Link>
+              <Link to="/employee-profile" onClick={closeMenu}>Employee Profile</Link>
             </>
           )}
 
-          {user && <Link to="/orders">Orders</Link>}
+          {user && (
+            <Link to="/orders" onClick={closeMenu}>Orders</Link>
+          )}
+
+          {!user && (
+            <>
+              <Link to="/login" onClick={closeMenu}>Login</Link>
+              <Link to="/signup" onClick={closeMenu}>Signup</Link>
+            </>
+          )}
         </nav>
       </aside>
 
       <div className="main">
         <header className="topbar">
-          <button className="menu-btn" onClick={() => setOpen(!open)}>
+          <button
+            type="button"
+            className="menu-btn"
+            onClick={() => setOpen(!open)}
+          >
             ☰
           </button>
 
@@ -56,7 +73,11 @@ export default function MainLayout({ children }: Props) {
             <DarkModeToggle />
 
             {user ? (
-              <button className="button button-danger" onClick={logout}>
+              <button
+                type="button"
+                className="button button-danger"
+                onClick={logout}
+              >
                 Logout
               </button>
             ) : (

@@ -1,175 +1,132 @@
 import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
-
 import { connection } from "../signalr";
 import { api } from "../api/api";
+import { toast } from "react-toastify";
+import { getUserFromToken } from "../utils/auth";
+import OrderProgress from "../components/OrderProgress";
 
-import LoadingSpinner from "../components/LoadingSpinner";
-import SkeletonCard from "../components/SkeletonCard";
+interface OrderItem {
+  id: number;
+  itemName: string;
+  quantity: number;
+  unitPriceAtTimeOfOrder: number;
+}
+
+interface Order {
+  id: number;
+  employeeName: string;
+  employeeNumber: string;
+  totalAmount: number;
+  status: string;
+  estimatedDeliveryTime: string;
+  orderDate: string;
+  items: OrderItem[];
+}
 
 export default function Orders() {
-
-  const [orders, setOrders] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const user = getUserFromToken();
+  const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
-
     loadOrders();
 
     connection.on("ReceiveStatusUpdate", (order) => {
-
-      setOrders(prev =>
-        prev.map(o =>
-          o.id === order.id ? order : o
-        )
+      setOrders((prev) =>
+        prev.map((o) => (o.id === order.id ? { ...o, ...order } : o))
       );
+    });
 
-      toast.info(`Order #${order.id} updated to ${order.status}`);
-
+    connection.on("ReceiveOrderUpdate", (order) => {
+      setOrders((prev) => [order, ...prev]);
     });
 
     return () => {
       connection.off("ReceiveStatusUpdate");
+      connection.off("ReceiveOrderUpdate");
     };
-
   }, []);
 
   const loadOrders = async () => {
-
     try {
+      const url =
+        user?.role === "Employee"
+          ? `/orders/employee/${user.employeeNumber}`
+          : "/orders/all";
 
-      setLoading(true);
-
-      const res = await api.get("/orders/all");
-
+      const res = await api.get(url);
       setOrders(res.data);
-
-    } catch {
-
+    } catch (error) {
+      console.error(error);
       toast.error("Failed to load orders");
-
-    } finally {
-
-      setLoading(false);
-
     }
   };
 
-  const getStatusClass = (status: string) => {
-
-    switch (status.toLowerCase()) {
-
-      case "pending":
-        return "badge pending";
-
-      case "preparing":
-        return "badge preparing";
-
-      case "delivering":
-        return "badge delivering";
-
-      case "delivered":
-        return "badge delivered";
-
-      default:
-        return "badge";
+  const cancelOrder = async (id: number) => {
+    try {
+      await api.put(`/orders/${id}/cancel`);
+      toast.success("Order cancelled and refunded");
+      loadOrders();
+    } catch (error: any) {
+      toast.error(error.response?.data || "Failed to cancel order");
     }
   };
 
   return (
     <div>
+      <h1 className="page-title">📦 Orders</h1>
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "20px"
-        }}
-      >
-
-        <h1 className="page-title">
-          📦 Live Orders
-        </h1>
-
-        <button
-          className="button"
-          onClick={loadOrders}
-        >
-          Refresh
-        </button>
-
-      </div>
-
-      {loading ? (
-
-        <div className="grid grid-3">
-
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
-
-        </div>
-
-      ) : orders.length === 0 ? (
-
-        <div className="card">
-          <p>No orders found.</p>
-        </div>
-
+      {orders.length === 0 ? (
+        <div className="card">No orders found.</div>
       ) : (
+        <div className="grid">
+          {orders.map((o) => (
+            <div key={o.id} className="card">
+              <h2>Order #{o.id}</h2>
 
-        <div className="grid grid-3">
-
-          {orders.map(order => (
-
-            <div
-              key={order.id}
-              className="card"
-            >
-
-              <h2>
-                Order #{order.id}
-              </h2>
-
-              <p
-                style={{
-                  marginTop: "10px"
-                }}
-              >
-                Employee:
-                {" "}
-                {order.employee?.name || "Unknown"}
+              <p>
+                <strong>Employee:</strong> {o.employeeName} ({o.employeeNumber})
               </p>
 
               <p>
-                Total:
-                {" "}
-                <strong>
-                  R{order.totalAmount}
-                </strong>
+                <strong>Total:</strong> R{Number(o.totalAmount).toFixed(2)}
               </p>
 
-              <p
-                style={{
-                  marginTop: "15px"
-                }}
-              >
-                Status:
+              <p>
+                <strong>Status:</strong>{" "}
+                <span className={`badge ${o.status.toLowerCase().replaceAll(" ", "-")}`}>
+                  {o.status}
+                </span>
               </p>
 
-              <span className={getStatusClass(order.status)}>
-                {order.status}
-              </span>
+              <p>
+                <strong>ETA:</strong> {o.estimatedDeliveryTime}
+              </p>
 
+              <OrderProgress status={o.status} />
+
+              {o.items.map((item) => (
+                <div key={item.id} className="cart-item">
+                  <span>
+                    {item.itemName} x {item.quantity}
+                  </span>
+                  <span>
+                    R{Number(item.unitPriceAtTimeOfOrder * item.quantity).toFixed(2)}
+                  </span>
+                </div>
+              ))}
+
+              {o.status === "Pending" && (
+                <button
+                  className="button button-danger"
+                  onClick={() => cancelOrder(o.id)}
+                >
+                  Cancel Order
+                </button>
+              )}
             </div>
-
           ))}
-
         </div>
-
       )}
-
     </div>
   );
 }
