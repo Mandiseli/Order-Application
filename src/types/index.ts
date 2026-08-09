@@ -15,6 +15,7 @@ export interface GeoRestaurant {
   imageUrl?: string;
 }
 
+
 export interface CartItem {
   menuItemId: number;
   name: string;
@@ -46,15 +47,20 @@ export interface MenuItem {
 }
 
 export interface OrderItem {
-  menuItemId: number;
+  id: number;
+  itemName: string;
   quantity: number;
   unitPriceAtTimeOfOrder: number;
 }
 
 export interface Order {
   id: number;
+  employeeName: string;
+  employeeNumber: string;
   totalAmount: number;
   status: string;
+  estimatedDeliveryTime: string;
+  orderDate: string;
   items: OrderItem[];
 }
 

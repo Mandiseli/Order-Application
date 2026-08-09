@@ -7,6 +7,7 @@ import { useCart } from "../hooks/useCart";
 import { getSampleMenu } from "../data/sampleMenus";
 import type { GeoRestaurant } from "../types";
 import { getUserFromToken } from "../utils/auth";
+import RestaurantImage from "../components/RestaurantImage";
 
 export default function Restaurants() {
   const user = getUserFromToken();
@@ -176,6 +177,7 @@ export default function Restaurants() {
                 key={`${restaurant.name}-${restaurantIndex}`}
                 className="uber-restaurant-card"
               >
+                <RestaurantImage src={restaurant.imageUrl} alt={restaurant.name} />
                 <div className="restaurant-image">
                   <img
                     src={

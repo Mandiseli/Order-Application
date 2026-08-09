@@ -76,6 +76,29 @@ button:disabled {
   font-weight: 600;
 }
 
+.filter-card {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin: 25px 0;
+}
+
+.chart-card {
+  min-height: 360px;
+}
+
+.cancelled {
+  background: #64748b;
+}
+
 .button:hover {
   background: #1d4ed8;
 }
