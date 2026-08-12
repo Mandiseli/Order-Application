@@ -3,11 +3,11 @@ import { api } from "../api/api";
 import { toast } from "react-toastify";
 import CitySelector from "../components/CitySelector";
 import EmployeeSelector from "../components/EmployeeSelector";
+import RestaurantImage from "../components/RestaurantImage";
 import { useCart } from "../hooks/useCart";
 import { getSampleMenu } from "../data/sampleMenus";
 import type { GeoRestaurant } from "../types";
 import { getUserFromToken } from "../utils/auth";
-import RestaurantImage from "../components/RestaurantImage";
 
 export default function Restaurants() {
   const user = getUserFromToken();
@@ -116,7 +116,7 @@ export default function Restaurants() {
     try {
       await api.post("/orders/place-external", {
         employeeNumber,
-        items: cart.map(item => ({
+        items: cart.map((item) => ({
           itemName: item.name,
           price: item.price,
           quantity: item.quantity
@@ -177,16 +177,10 @@ export default function Restaurants() {
                 key={`${restaurant.name}-${restaurantIndex}`}
                 className="uber-restaurant-card"
               >
-                <RestaurantImage src={restaurant.imageUrl} alt={restaurant.name} />
-                <div className="restaurant-image">
-                  <img
-                    src={
-                      restaurant.imageUrl ||
-                      `https://source.unsplash.com/600x300/?restaurant,food,${restaurant.name}`
-                    }
-                    alt={restaurant.name}
-                  />
-                </div>
+                <RestaurantImage
+                  src={restaurant.imageUrl}
+                  alt={restaurant.name}
+                />
 
                 <div className="restaurant-header">
                   <h2>{restaurant.name}</h2>
@@ -205,7 +199,7 @@ export default function Restaurants() {
                       ❤️ Favorite
                     </button>
 
-                    {[1, 2, 3, 4, 5].map(star => (
+                    {[1, 2, 3, 4, 5].map((star) => (
                       <button
                         key={star}
                         className="star-btn"
@@ -218,7 +212,7 @@ export default function Restaurants() {
                 </div>
 
                 <div className="menu-list">
-                  {menu.map(item => (
+                  {menu.map((item) => (
                     <div key={item.id} className="menu-item">
                       <div className="menu-info">
                         <strong>{item.name}</strong>
@@ -256,7 +250,7 @@ export default function Restaurants() {
           {cart.length === 0 ? (
             <p className="muted">Your cart is empty</p>
           ) : (
-            cart.map(item => (
+            cart.map((item) => (
               <div key={item.menuItemId} className="cart-item">
                 <div>
                   <strong>{item.name}</strong>
