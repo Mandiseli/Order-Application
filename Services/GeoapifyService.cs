@@ -16,80 +16,68 @@ public class GeoapifyService : IGeoapifyService
 
     public async Task<List<PlaceDto>> GetRestaurantsByCityAsync(string city)
     {
-        var apiKey = _config["Geoapify:ApiKey"];
+        var apiKey = Environment.GetEnvironmentVariable("GEOAPIFY_API_KEY")
+                     ?? _config["Geoapify:ApiKey"];
 
         if (string.IsNullOrWhiteSpace(apiKey))
             throw new Exception("Geoapify API key is missing.");
 
-        var encodedCity = Uri.EscapeDataString($"{city}, South Africa");
+        var geoUrl =
+            $"https://api.geoapify.com/v1/geocode/search?text={Uri.EscapeDataString(city + ", South Africa")}&limit=1&apiKey={apiKey}";
 
-        var geocodeUrl =
-            $"https://api.geoapify.com/v1/geocode/search?text={encodedCity}&limit=1&apiKey={apiKey}";
+        var geoResponse = await _httpClient.GetAsync(geoUrl);
+        var geoJson = await geoResponse.Content.ReadAsStringAsync();
 
-        var geocodeResponse = await _httpClient.GetAsync(geocodeUrl);
-        var geocodeJson = await geocodeResponse.Content.ReadAsStringAsync();
+        if (!geoResponse.IsSuccessStatusCode)
+            throw new Exception($"Geoapify geocode error: {geoJson}");
 
-        if (!geocodeResponse.IsSuccessStatusCode)
-            throw new Exception($"Geocode failed: {geocodeJson}");
+        using var geoDoc = JsonDocument.Parse(geoJson);
+        var feature = geoDoc.RootElement.GetProperty("features").EnumerateArray().FirstOrDefault();
 
-        using var geoDoc = JsonDocument.Parse(geocodeJson);
+        if (feature.ValueKind == JsonValueKind.Undefined)
+            return new List<PlaceDto>();
 
-        var features = geoDoc.RootElement.GetProperty("features");
-
-        if (features.GetArrayLength() == 0)
-            throw new Exception($"City not found: {city}");
-
-        var props = features[0].GetProperty("properties");
-
-        var lat = props.GetProperty("lat").GetDouble();
-        var lon = props.GetProperty("lon").GetDouble();
+        var lon = feature.GetProperty("geometry").GetProperty("coordinates")[0].GetDouble();
+        var lat = feature.GetProperty("geometry").GetProperty("coordinates")[1].GetDouble();
 
         var placesUrl =
-            $"https://api.geoapify.com/v2/places" +
-            $"?categories=catering.restaurant" +
-            $"&filter=circle:{lon},{lat},15000" +
-            $"&bias=proximity:{lon},{lat}" +
-            $"&limit=20" +
-            $"&apiKey={apiKey}";
+            $"https://api.geoapify.com/v2/places?categories=catering.restaurant,catering.fast_food&filter=circle:{lon},{lat},10000&limit=20&apiKey={apiKey}";
 
-        var placesResponse = await _httpClient.GetAsync(placesUrl);
-        var placesJson = await placesResponse.Content.ReadAsStringAsync();
+        var response = await _httpClient.GetAsync(placesUrl);
+        var json = await response.Content.ReadAsStringAsync();
 
-        if (!placesResponse.IsSuccessStatusCode)
-            throw new Exception($"Places failed: {placesJson}");
+        if (!response.IsSuccessStatusCode)
+            throw new Exception($"Geoapify places error: {json}");
 
-        using var placesDoc = JsonDocument.Parse(placesJson);
+        using var doc = JsonDocument.Parse(json);
 
-        var placeFeatures = placesDoc.RootElement.GetProperty("features");
+        var result = new List<PlaceDto>();
 
-        var restaurants = new List<PlaceDto>();
-
-        foreach (var item in placeFeatures.EnumerateArray())
+        foreach (var item in doc.RootElement.GetProperty("features").EnumerateArray())
         {
-            var placeProps = item.GetProperty("properties");
+            var properties = item.GetProperty("properties");
+            var geometry = item.GetProperty("geometry");
+            var coordinates = geometry.GetProperty("coordinates");
 
-            restaurants.Add(new PlaceDto
+            var name = properties.TryGetProperty("name", out var n)
+                ? n.GetString() ?? "Unnamed Restaurant"
+                : "Unnamed Restaurant";
+
+            var address = properties.TryGetProperty("formatted", out var f)
+                ? f.GetString() ?? ""
+                : "";
+
+            result.Add(new PlaceDto
             {
-                Name = placeProps.TryGetProperty("name", out var name)
-                    ? name.GetString() ?? "Unnamed Restaurant"
-                    : "Unnamed Restaurant",
-
-                Address = placeProps.TryGetProperty("formatted", out var address)
-                    ? address.GetString() ?? ""
-                    : "",
-
-                Latitude = placeProps.TryGetProperty("lat", out var pLat)
-                    ? pLat.GetDouble()
-                    : 0,
-
-                Longitude = placeProps.TryGetProperty("lon", out var pLon)
-                    ? pLon.GetDouble()
-                    : 0,
-
-                Category = "Restaurant"
+                Name = name,
+                Address = address,
+                Longitude = coordinates[0].GetDouble(),
+                Latitude = coordinates[1].GetDouble(),
+                Category = "Restaurant",
+                ImageUrl = ""
             });
         }
 
-        return restaurants;
+        return result;
     }
 }

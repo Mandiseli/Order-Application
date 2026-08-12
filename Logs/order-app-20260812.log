@@ -1,0 +1,27 @@
+2026-08-12 12:50:49.564 +02:00 [ERR] An error occurred using the connection to database '' on server 'localhost'.
+2026-08-12 15:01:42.135 +02:00 [INF] Executed DbCommand (271ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='Cafeteria' AND TABLE_NAME='__EFMigrationsHistory';
+2026-08-12 15:01:42.381 +02:00 [INF] Executed DbCommand (4ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='Cafeteria' AND TABLE_NAME='__EFMigrationsHistory';
+2026-08-12 15:01:42.515 +02:00 [INF] Executed DbCommand (46ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT `MigrationId`, `ProductVersion`
+FROM `__EFMigrationsHistory`
+ORDER BY `MigrationId`;
+2026-08-12 15:01:42.608 +02:00 [INF] No migrations were applied. The database is already up to date.
+2026-08-12 15:01:43.565 +02:00 [INF] Executed DbCommand (55ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT EXISTS (
+    SELECT 1
+    FROM `Employees` AS `e`)
+2026-08-12 15:01:43.604 +02:00 [INF] Executed DbCommand (10ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT EXISTS (
+    SELECT 1
+    FROM `Users` AS `u`)
+2026-08-12 15:01:43.631 +02:00 [INF] Order Application API starting...
+2026-08-12 15:01:43.730 +02:00 [INF] User profile is available. Using 'C:\Users\lenovo\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-08-12 15:01:43.880 +02:00 [INF] Creating key {8c7b18d8-6b6a-401b-8732-99eec40e32d1} with creation date 2026-08-12 13:01:43Z, activation date 2026-08-12 13:01:43Z, and expiration date 2026-11-10 13:01:43Z.
+2026-08-12 15:01:44.106 +02:00 [INF] Writing data to file 'C:\Users\lenovo\AppData\Local\ASP.NET\DataProtection-Keys\key-8c7b18d8-6b6a-401b-8732-99eec40e32d1.xml'.
+2026-08-12 15:01:44.772 +02:00 [INF] Now listening on: http://localhost:5174
+2026-08-12 15:01:44.794 +02:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-08-12 15:01:44.810 +02:00 [INF] Hosting environment: Development
+2026-08-12 15:01:44.815 +02:00 [INF] Content root path: C:\Users\lenovo\source\repos\Order Application\Backend\Order_App
+2026-08-12 15:04:02.286 +02:00 [INF] Application is shutting down...
