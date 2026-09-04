@@ -288,6 +288,62 @@ public class OrderService : IOrderService
             .ToListAsync();
     }
 
+    public async Task<(List<Order> Items, int TotalItems)> SearchOrdersAsync(
+        string? search,
+        string? status,
+        DateTime? fromDate,
+        DateTime? toDate,
+        int page,
+        int pageSize)
+    {
+        page = Math.Max(page, 1);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+
+        var query = _context.Orders
+            .AsNoTracking()
+            .Include(o => o.Employee)
+            .Include(o => o.Driver)
+            .Include(o => o.Items)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            query = query.Where(o =>
+                (o.Employee != null && o.Employee.Name.Contains(term)) ||
+                (o.Employee != null && o.Employee.EmployeeNumber.Contains(term)) ||
+                o.Id.ToString().Contains(term));
+        }
+
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            var normalizedStatus = status.Trim();
+            query = query.Where(o => o.Status == normalizedStatus);
+        }
+
+        if (fromDate.HasValue)
+        {
+            var from = fromDate.Value.Date;
+            query = query.Where(o => o.OrderDate >= from);
+        }
+
+        if (toDate.HasValue)
+        {
+            var toExclusive = toDate.Value.Date.AddDays(1);
+            query = query.Where(o => o.OrderDate < toExclusive);
+        }
+
+        var totalItems = await query.CountAsync();
+
+        var items = await query
+            .OrderByDescending(o => o.OrderDate)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (items, totalItems);
+    }
+
     public async Task<List<Order>> GetAllOrdersAsync()
     {
         return await _context.Orders

@@ -1,9 +1,15 @@
-﻿namespace Order_App.Dtos;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Order_App.Dtos;
 
 public class RestaurantDto
 {
+    [Required, StringLength(200)]
     public string Name { get; set; } = "";
-    public string Address { get; set; } = "";
-    public double Latitude { get; set; }
-    public double Longitude { get; set; }
+
+    [StringLength(500)]
+    public string LocationDescription { get; set; } = "";
+
+    [Url, StringLength(1000)]
+    public string? ImageUrl { get; set; }
 }

@@ -11,6 +11,7 @@ public interface IOrderService
     Task<Order?> AssignDriverAsync(AssignDriverDto dto);
     Task<List<Order>> GetOrdersForEmployeeAsync(string employeeNumber);
     Task<List<Order>> GetAllOrdersAsync();
+    Task<(List<Order> Items, int TotalItems)> SearchOrdersAsync(string? search, string? status, DateTime? fromDate, DateTime? toDate, int page, int pageSize);
     Task<Order?> UpdateOrderStatusAsync(int orderId, string status);
     Task<Order?> CancelOrderAsync(int orderId);
 }

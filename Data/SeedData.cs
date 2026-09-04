@@ -9,68 +9,65 @@ public static class SeedData
         if (!db.Employees.Any())
         {
             db.Employees.AddRange(
-                new Employee
-                {
-                    Name = "Sipho Dlamini",
-                    EmployeeNumber = "EMP001",
-                    Balance = 1000
-                },
-                new Employee
-                {
-                    Name = "Ayanda Ndlovu",
-                    EmployeeNumber = "EMP002",
-                    Balance = 750
-                },
-                new Employee
-                {
-                    Name = "Thabo Mokoena",
-                    EmployeeNumber = "EMP003",
-                    Balance = 500
-                }
+                new Employee { Name = "Sipho Dlamini", EmployeeNumber = "EMP001", Balance = 1000 },
+                new Employee { Name = "Ayanda Ndlovu", EmployeeNumber = "EMP002", Balance = 750 },
+                new Employee { Name = "Thabo Mokoena", EmployeeNumber = "EMP003", Balance = 500 }
             );
-
             db.SaveChanges();
         }
 
-        if (!db.Users.Any())
-        {
-            db.Users.AddRange(
-                new User
-                {
-                    Username = "admin",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
-                    Role = "Admin"
-                },
-                new User
-                {
-                    Username = "manager",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("manager123"),
-                    Role = "Manager"
-                },
-                new User
-                {
-                    Username = "sipho",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("employee123"),
-                    Role = "Employee",
-                    EmployeeNumber = "EMP001"
-                },
-                new User
-                {
-                    Username = "ayanda",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("employee123"),
-                    Role = "Employee",
-                    EmployeeNumber = "EMP002"
-                },
-                new User
-                {
-                    Username = "thabo",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("employee123"),
-                    Role = "Employee",
-                    EmployeeNumber = "EMP003"
-                }
-            );
+        if (db.Users.Any())
+            return;
 
-            db.SaveChanges();
-        }
+        var adminPassword = RequiredSecret("SEED_ADMIN_PASSWORD");
+        var managerPassword = RequiredSecret("SEED_MANAGER_PASSWORD");
+        var employeePassword = RequiredSecret("SEED_EMPLOYEE_PASSWORD");
+
+        db.Users.AddRange(
+            new User
+            {
+                Username = "admin",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(adminPassword),
+                Role = "Admin"
+            },
+            new User
+            {
+                Username = "manager",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(managerPassword),
+                Role = "Manager"
+            },
+            new User
+            {
+                Username = "sipho",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(employeePassword),
+                Role = "Employee",
+                EmployeeNumber = "EMP001"
+            },
+            new User
+            {
+                Username = "ayanda",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(employeePassword),
+                Role = "Employee",
+                EmployeeNumber = "EMP002"
+            },
+            new User
+            {
+                Username = "thabo",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(employeePassword),
+                Role = "Employee",
+                EmployeeNumber = "EMP003"
+            }
+        );
+
+        db.SaveChanges();
+    }
+
+    private static string RequiredSecret(string name)
+    {
+        var value = Environment.GetEnvironmentVariable(name);
+        if (string.IsNullOrWhiteSpace(value))
+            throw new InvalidOperationException($"{name} is required when creating the initial users.");
+
+        return value;
     }
 }

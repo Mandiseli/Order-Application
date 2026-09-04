@@ -1,20 +1,23 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DotNetEnv;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Order_App.Data;
 
-namespace Order_App
+namespace Order_App;
+
+public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<Order_App.Data.ApplicationDbContext>
 {
-    public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
+    public Order_App.Data.ApplicationDbContext CreateDbContext(string[] args)
     {
-        public ApplicationDbContext CreateDbContext(string[] args)
-        {
-            var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
+        Env.Load();
 
-            var connectionString = "Server=localhost;Database=Cafeteria;User=root;Password=10May1989;";
+        var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION");
 
-            optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+        if (string.IsNullOrWhiteSpace(connectionString))
+            throw new InvalidOperationException("DB_CONNECTION is required for EF Core design-time operations.");
 
-            return new ApplicationDbContext(optionsBuilder.Options);
-        }
+        var optionsBuilder = new DbContextOptionsBuilder<Order_App.Data.ApplicationDbContext>();
+        optionsBuilder.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 0)));
+
+        return new Order_App.Data.ApplicationDbContext(optionsBuilder.Options);
     }
 }

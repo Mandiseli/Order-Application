@@ -1,8 +1,10 @@
-﻿namespace Order_App.Dtos;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Order_App.Dtos;
 
 public class NotificationDto
 {
-    public string To { get; set; } = "";
-    public string Subject { get; set; } = "";
-    public string Message { get; set; } = "";
+    [Required, StringLength(200)] public string To { get; set; } = "";
+    [Required, StringLength(200)] public string Subject { get; set; } = "";
+    [Required, StringLength(5000)] public string Message { get; set; } = "";
 }

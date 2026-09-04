@@ -1,0 +1,287 @@
+2026-08-27 08:20:16.110 +02:00 [ERR] An error occurred using the connection to database '' on server 'localhost'.
+2026-08-27 08:20:19.792 +02:00 [ERR] An error occurred while initializing the database.
+System.InvalidOperationException: An exception has been raised that is likely due to a transient failure. Consider enabling transient error resiliency by adding 'EnableRetryOnFailure()' to the 'UseMySql' call.
+ ---> MySqlConnector.MySqlException (0x80004005): Connect Timeout expired.
+ ---> MySqlConnector.MySqlException (0x80004005): Connect Timeout expired.
+   at MySqlConnector.Core.ServerSession.OpenTcpSocketAsync(ConnectionSettings cs, ILoadBalancer loadBalancer, Activity activity, IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/Core/ServerSession.cs:line 1310
+   at MySqlConnector.Core.ServerSession.ConnectAsync(ConnectionSettings cs, MySqlConnection connection, Int64 startingTimestamp, ILoadBalancer loadBalancer, Activity activity, IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/Core/ServerSession.cs:line 433
+   at MySqlConnector.Core.ServerSession.ConnectAndRedirectAsync(ILogger connectionLogger, ILogger poolLogger, IConnectionPoolMetadata pool, ConnectionSettings cs, ILoadBalancer loadBalancer, MySqlConnection connection, Action`4 logMessage, Int64 startingTimestamp, Activity activity, IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/Core/ServerSession.cs:line 720
+   at MySqlConnector.Core.ServerSession.ConnectAndRedirectAsync(ILogger connectionLogger, ILogger poolLogger, IConnectionPoolMetadata pool, ConnectionSettings cs, ILoadBalancer loadBalancer, MySqlConnection connection, Action`4 logMessage, Int64 startingTimestamp, Activity activity, IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/Core/ServerSession.cs:line 725
+   at MySqlConnector.MySqlConnection.CreateSessionAsync(ConnectionPool pool, Int64 startingTimestamp, Activity activity, Nullable`1 ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/MySqlConnection.cs:line 1096
+   at MySqlConnector.MySqlConnection.CreateSessionAsync(ConnectionPool pool, Int64 startingTimestamp, Activity activity, Nullable`1 ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/MySqlConnection.cs:line 1111
+   at MySqlConnector.MySqlConnection.OpenAsync(Nullable`1 ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/MySqlConnection.cs:line 562
+   at MySqlConnector.MySqlConnection.Open() in /_/src/MySqlConnector/MySqlConnection.cs:line 517
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenDbConnection(Boolean errorsExpected)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternal(Boolean errorsExpected)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.Open(Boolean errorsExpected)
+   at Pomelo.EntityFrameworkCore.MySql.Storage.Internal.MySqlRelationalConnection.Open(Boolean errorsExpected)
+   at Pomelo.EntityFrameworkCore.MySql.Storage.Internal.MySqlDatabaseCreator.<>c__DisplayClass18_0.<Exists>b__0(DateTime giveUp)
+   at Microsoft.EntityFrameworkCore.ExecutionStrategyExtensions.<>c__DisplayClass12_0`2.<Execute>b__0(DbContext _, TState s)
+   at Pomelo.EntityFrameworkCore.MySql.Storage.Internal.MySqlExecutionStrategy.Execute[TState,TResult](TState state, Func`3 operation, Func`3 verifySucceeded)
+   --- End of inner exception stack trace ---
+   at Pomelo.EntityFrameworkCore.MySql.Storage.Internal.MySqlExecutionStrategy.Execute[TState,TResult](TState state, Func`3 operation, Func`3 verifySucceeded)
+   at Microsoft.EntityFrameworkCore.ExecutionStrategyExtensions.Execute[TState,TResult](IExecutionStrategy strategy, TState state, Func`2 operation, Func`2 verifySucceeded)
+   at Microsoft.EntityFrameworkCore.ExecutionStrategyExtensions.Execute[TState,TResult](IExecutionStrategy strategy, TState state, Func`2 operation)
+   at Pomelo.EntityFrameworkCore.MySql.Storage.Internal.MySqlDatabaseCreator.Exists(Boolean retryOnNotExists)
+   at Pomelo.EntityFrameworkCore.MySql.Storage.Internal.MySqlDatabaseCreator.Exists()
+   at Microsoft.EntityFrameworkCore.Migrations.HistoryRepository.Exists()
+   at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+   at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(DatabaseFacade databaseFacade)
+   at Program.<Main>$(String[] args) in C:\Users\lenovo\source\repos\Order Application\Backend\Order_App\Program.cs:line 278
+2026-08-27 14:47:42.299 +02:00 [INF] Executed DbCommand (208ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='Cafeteria' AND TABLE_NAME='__EFMigrationsHistory';
+2026-08-27 14:47:42.666 +02:00 [INF] Executed DbCommand (3ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='Cafeteria' AND TABLE_NAME='__EFMigrationsHistory';
+2026-08-27 14:47:42.798 +02:00 [INF] Executed DbCommand (58ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT `MigrationId`, `ProductVersion`
+FROM `__EFMigrationsHistory`
+ORDER BY `MigrationId`;
+2026-08-27 14:47:42.847 +02:00 [INF] No migrations were applied. The database is already up to date.
+2026-08-27 14:47:43.686 +02:00 [INF] Executed DbCommand (44ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT EXISTS (
+    SELECT 1
+    FROM `Employees` AS `e`)
+2026-08-27 14:47:43.729 +02:00 [INF] Executed DbCommand (14ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT EXISTS (
+    SELECT 1
+    FROM `Users` AS `u`)
+2026-08-27 14:47:43.747 +02:00 [INF] Order Application API starting...
+2026-08-27 14:47:43.823 +02:00 [INF] User profile is available. Using 'C:\Users\lenovo\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-08-27 14:47:44.201 +02:00 [INF] Now listening on: http://localhost:5174
+2026-08-27 14:47:44.216 +02:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-08-27 14:47:44.223 +02:00 [INF] Hosting environment: Development
+2026-08-27 14:47:44.236 +02:00 [INF] Content root path: C:\Users\lenovo\source\repos\Order Application\Backend\Order_App
+2026-08-27 15:01:51.204 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/api/auth/login - null null
+2026-08-27 15:01:51.254 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/api/auth/login - null null
+2026-08-27 15:01:51.298 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null null
+2026-08-27 15:01:57.185 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:01:57.185 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:01:57.185 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:01:57.274 +02:00 [INF] HTTP OPTIONS /orderHub/negotiate responded 204 in 271.9430 ms
+2026-08-27 15:01:57.274 +02:00 [INF] HTTP OPTIONS /api/auth/login responded 204 in 623.8203 ms
+2026-08-27 15:01:57.278 +02:00 [INF] HTTP OPTIONS /api/auth/login responded 204 in 747.4789 ms
+2026-08-27 15:01:57.494 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/api/auth/login - 204 null null 6210.2029ms
+2026-08-27 15:01:57.532 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/api/auth/login - 204 null null 6416.2721ms
+2026-08-27 15:01:57.533 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 204 null null 6509.0182ms
+2026-08-27 15:02:01.348 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/api/auth/login - null null
+2026-08-27 15:02:06.343 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/api/auth/login - null null
+2026-08-27 15:02:06.749 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/api/auth/login - application/json 46
+2026-08-27 15:02:06.767 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/api/auth/login - null null
+2026-08-27 15:02:07.443 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/api/auth/login - null null
+2026-08-27 15:02:07.581 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:02:07.690 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:02:07.912 +02:00 [INF] HTTP OPTIONS /api/auth/login responded 204 in 222.9878 ms
+2026-08-27 15:02:07.761 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:02:07.901 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:02:07.909 +02:00 [INF] HTTP OPTIONS /api/auth/login responded 204 in 334.5504 ms
+2026-08-27 15:02:07.728 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:02:07.944 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/api/auth/login - 204 null null 1598.6018ms
+2026-08-27 15:02:07.949 +02:00 [INF] HTTP OPTIONS /api/auth/login responded 204 in 188.0032 ms
+2026-08-27 15:02:07.951 +02:00 [INF] HTTP OPTIONS /api/auth/login responded 204 in 51.0696 ms
+2026-08-27 15:02:07.975 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/api/auth/login - 204 null null 6623.0387ms
+2026-08-27 15:02:08.050 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/api/auth/login - null null
+2026-08-27 15:02:08.054 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/api/auth/login - 204 null null 1287.045ms
+2026-08-27 15:02:08.061 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/api/auth/login - 204 null null 617.6831ms
+2026-08-27 15:02:08.077 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null 0
+2026-08-27 15:02:08.098 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:02:08.213 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:02:08.215 +02:00 [INF] HTTP OPTIONS /api/auth/login responded 204 in 117.1975 ms
+2026-08-27 15:02:08.229 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/api/auth/login - 204 null null 179.271ms
+2026-08-27 15:02:08.435 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/api/auth/login - application/json 46
+2026-08-27 15:02:10.410 +02:00 [INF] Executing endpoint '/orderHub/negotiate'
+2026-08-27 15:02:10.410 +02:00 [INF] Executing endpoint 'Order_App.Controllers.AuthController.Login (Order_App)'
+2026-08-27 15:02:11.790 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/api/auth/login - application/json 42
+2026-08-27 15:02:16.145 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/api/auth/login - application/json 42
+2026-08-27 15:02:16.247 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:02:19.445 +02:00 [INF] Executed endpoint '/orderHub/negotiate'
+2026-08-27 15:02:21.006 +02:00 [INF] Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(Order_App.Dtos.LoginDto) on controller Order_App.Controllers.AuthController (Order_App).
+2026-08-27 15:02:21.403 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/api/auth/login - application/json 42
+2026-08-27 15:02:26.145 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:02:28.309 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/api/auth/login - application/json 42
+2026-08-27 15:02:31.792 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:02:31.915 +02:00 [INF] HTTP POST /orderHub/negotiate responded 200 in 23706.1954 ms
+2026-08-27 15:02:31.917 +02:00 [INF] Executing endpoint 'Order_App.Controllers.AuthController.Login (Order_App)'
+2026-08-27 15:02:34.662 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:02:36.108 +02:00 [INF] Executing endpoint 'Order_App.Controllers.AuthController.Login (Order_App)'
+2026-08-27 15:02:34.750 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:02:34.785 +02:00 [INF] Executing endpoint 'Order_App.Controllers.AuthController.Login (Order_App)'
+2026-08-27 15:02:35.896 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 200 316 application/json 27820.6065ms
+2026-08-27 15:02:35.948 +02:00 [INF] Request starting HTTP/1.1 GET http://localhost:5174/orderHub?id=tBM83XrlVpdx1UFK8-cyDQ - null null
+2026-08-27 15:02:36.056 +02:00 [INF] Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(Order_App.Dtos.LoginDto) on controller Order_App.Controllers.AuthController (Order_App).
+2026-08-27 15:02:34.674 +02:00 [INF] Executing endpoint 'Order_App.Controllers.AuthController.Login (Order_App)'
+2026-08-27 15:02:37.293 +02:00 [INF] Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(Order_App.Dtos.LoginDto) on controller Order_App.Controllers.AuthController (Order_App).
+2026-08-27 15:02:37.791 +02:00 [INF] Executing endpoint 'Order_App.Controllers.AuthController.Login (Order_App)'
+2026-08-27 15:02:37.878 +02:00 [INF] Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(Order_App.Dtos.LoginDto) on controller Order_App.Controllers.AuthController (Order_App).
+2026-08-27 15:02:38.254 +02:00 [INF] Executed DbCommand (340ms) [Parameters=[@__dto_Username_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT `u`.`Id`, `u`.`EmployeeNumber`, `u`.`PasswordHash`, `u`.`RefreshToken`, `u`.`RefreshTokenExpiresAt`, `u`.`Role`, `u`.`Username`
+FROM `Users` AS `u`
+WHERE `u`.`Username` = @__dto_Username_0
+LIMIT 1
+2026-08-27 15:02:38.806 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:02:38.831 +02:00 [INF] Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(Order_App.Dtos.LoginDto) on controller Order_App.Controllers.AuthController (Order_App).
+2026-08-27 15:02:38.851 +02:00 [INF] Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(Order_App.Dtos.LoginDto) on controller Order_App.Controllers.AuthController (Order_App).
+2026-08-27 15:02:38.952 +02:00 [INF] Executing endpoint '/orderHub'
+2026-08-27 15:02:39.732 +02:00 [INF] Executed DbCommand (40ms) [Parameters=[@__dto_Username_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT `u`.`Id`, `u`.`EmployeeNumber`, `u`.`PasswordHash`, `u`.`RefreshToken`, `u`.`RefreshTokenExpiresAt`, `u`.`Role`, `u`.`Username`
+FROM `Users` AS `u`
+WHERE `u`.`Username` = @__dto_Username_0
+LIMIT 1
+2026-08-27 15:02:39.732 +02:00 [INF] Executed DbCommand (90ms) [Parameters=[@__dto_Username_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT `u`.`Id`, `u`.`EmployeeNumber`, `u`.`PasswordHash`, `u`.`RefreshToken`, `u`.`RefreshTokenExpiresAt`, `u`.`Role`, `u`.`Username`
+FROM `Users` AS `u`
+WHERE `u`.`Username` = @__dto_Username_0
+LIMIT 1
+2026-08-27 15:02:39.747 +02:00 [INF] Executed DbCommand (9ms) [Parameters=[@__dto_Username_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT `u`.`Id`, `u`.`EmployeeNumber`, `u`.`PasswordHash`, `u`.`RefreshToken`, `u`.`RefreshTokenExpiresAt`, `u`.`Role`, `u`.`Username`
+FROM `Users` AS `u`
+WHERE `u`.`Username` = @__dto_Username_0
+LIMIT 1
+2026-08-27 15:02:40.067 +02:00 [INF] Executed DbCommand (4ms) [Parameters=[@__dto_Username_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT `u`.`Id`, `u`.`EmployeeNumber`, `u`.`PasswordHash`, `u`.`RefreshToken`, `u`.`RefreshTokenExpiresAt`, `u`.`Role`, `u`.`Username`
+FROM `Users` AS `u`
+WHERE `u`.`Username` = @__dto_Username_0
+LIMIT 1
+2026-08-27 15:02:40.084 +02:00 [INF] Executing UnauthorizedObjectResult, writing value of type 'System.String'.
+2026-08-27 15:02:41.285 +02:00 [INF] Executed DbCommand (3ms) [Parameters=[@__dto_Username_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT `u`.`Id`, `u`.`EmployeeNumber`, `u`.`PasswordHash`, `u`.`RefreshToken`, `u`.`RefreshTokenExpiresAt`, `u`.`Role`, `u`.`Username`
+FROM `Users` AS `u`
+WHERE `u`.`Username` = @__dto_Username_0
+LIMIT 1
+2026-08-27 15:02:41.318 +02:00 [INF] Executed endpoint '/orderHub'
+2026-08-27 15:02:41.554 +02:00 [INF] HTTP GET /orderHub responded 404 in 2803.7898 ms
+2026-08-27 15:02:41.377 +02:00 [INF] Executing UnauthorizedObjectResult, writing value of type 'System.String'.
+2026-08-27 15:02:41.425 +02:00 [INF] Executing UnauthorizedObjectResult, writing value of type 'System.String'.
+2026-08-27 15:02:41.902 +02:00 [INF] Executed action Order_App.Controllers.AuthController.Login (Order_App) in 3003.8ms
+2026-08-27 15:02:41.360 +02:00 [INF] Executing UnauthorizedObjectResult, writing value of type 'System.String'.
+2026-08-27 15:02:41.567 +02:00 [INF] Executing UnauthorizedObjectResult, writing value of type 'System.String'.
+2026-08-27 15:02:41.574 +02:00 [INF] Executed action Order_App.Controllers.AuthController.Login (Order_App) in 8688.1014ms
+2026-08-27 15:02:41.836 +02:00 [INF] Request finished HTTP/1.1 GET http://localhost:5174/orderHub?id=tBM83XrlVpdx1UFK8-cyDQ - 404 null null 5887.2726ms
+2026-08-27 15:02:41.882 +02:00 [INF] Executed action Order_App.Controllers.AuthController.Login (Order_App) in 3046.8599ms
+2026-08-27 15:02:41.510 +02:00 [INF] Executing UnauthorizedObjectResult, writing value of type 'System.String'.
+2026-08-27 15:02:42.746 +02:00 [INF] Executed endpoint 'Order_App.Controllers.AuthController.Login (Order_App)'
+2026-08-27 15:02:42.789 +02:00 [INF] Executed action Order_App.Controllers.AuthController.Login (Order_App) in 3969.3112ms
+2026-08-27 15:02:42.822 +02:00 [INF] Executed action Order_App.Controllers.AuthController.Login (Order_App) in 1583.8368ms
+2026-08-27 15:02:42.870 +02:00 [INF] Executed endpoint 'Order_App.Controllers.AuthController.Login (Order_App)'
+2026-08-27 15:02:43.511 +02:00 [INF] Executed endpoint 'Order_App.Controllers.AuthController.Login (Order_App)'
+2026-08-27 15:02:43.615 +02:00 [INF] Executed action Order_App.Controllers.AuthController.Login (Order_App) in 3859.4506ms
+2026-08-27 15:02:43.676 +02:00 [INF] HTTP POST /api/auth/login responded 401 in 11883.9424 ms
+2026-08-27 15:02:43.696 +02:00 [INF] Executed endpoint 'Order_App.Controllers.AuthController.Login (Order_App)'
+2026-08-27 15:02:43.723 +02:00 [INF] Executed endpoint 'Order_App.Controllers.AuthController.Login (Order_App)'
+2026-08-27 15:02:47.262 +02:00 [INF] HTTP POST /api/auth/login responded 401 in 12511.7863 ms
+2026-08-27 15:02:43.781 +02:00 [INF] HTTP POST /api/auth/login responded 401 in 9119.5192 ms
+2026-08-27 15:02:43.808 +02:00 [INF] Executed endpoint 'Order_App.Controllers.AuthController.Login (Order_App)'
+2026-08-27 15:02:44.097 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/api/auth/login - 401 null text/plain; charset=utf-8 27951.8245ms
+2026-08-27 15:02:44.789 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null null
+2026-08-27 15:02:45.826 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/api/auth/login - null null
+2026-08-27 15:02:47.232 +02:00 [INF] HTTP POST /api/auth/login responded 401 in 31104.3672 ms
+2026-08-27 15:02:43.733 +02:00 [INF] HTTP POST /api/auth/login responded 401 in 36009.4277 ms
+2026-08-27 15:02:48.639 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null null
+2026-08-27 15:02:49.383 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/api/auth/login - 401 null text/plain; charset=utf-8 21073.6429ms
+2026-08-27 15:02:49.552 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/api/auth/login - 401 null text/plain; charset=utf-8 28148.7276ms
+2026-08-27 15:02:49.588 +02:00 [INF] HTTP POST /api/auth/login responded 401 in 23445.1202 ms
+2026-08-27 15:02:49.739 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/api/auth/login - application/json 42
+2026-08-27 15:02:49.932 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:02:50.326 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:02:54.706 +02:00 [INF] HTTP OPTIONS /api/auth/login responded 204 in 4380.4869 ms
+2026-08-27 15:02:51.429 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/api/auth/login - 401 null text/plain; charset=utf-8 44679.4024ms
+2026-08-27 15:02:52.120 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:02:56.331 +02:00 [INF] HTTP OPTIONS /orderHub/negotiate responded 204 in 4211.8280 ms
+2026-08-27 15:02:53.901 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:02:56.899 +02:00 [INF] Executing endpoint 'Order_App.Controllers.AuthController.Login (Order_App)'
+2026-08-27 15:02:51.051 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/api/auth/login - 401 null text/plain; charset=utf-8 42616.0411ms
+2026-08-27 15:02:55.446 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/api/auth/login - 204 null null 9620.0488ms
+2026-08-27 15:02:53.221 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/api/auth/login - 401 null text/plain; charset=utf-8 41431.0195ms
+2026-08-27 15:02:56.883 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 204 null null 8243.3127ms
+2026-08-27 15:02:54.687 +02:00 [INF] HTTP OPTIONS /orderHub/negotiate responded 204 in 4754.5959 ms
+2026-08-27 15:02:56.901 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null 0
+2026-08-27 15:02:57.642 +02:00 [INF] Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(Order_App.Dtos.LoginDto) on controller Order_App.Controllers.AuthController (Order_App).
+2026-08-27 15:03:03.216 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 204 null null 18427.7526ms
+2026-08-27 15:03:04.534 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:03:04.638 +02:00 [INF] Executed action Order_App.Controllers.AuthController.Login (Order_App) in 45.3925ms
+2026-08-27 15:03:05.517 +02:00 [INF] Executing endpoint '/orderHub/negotiate'
+2026-08-27 15:03:05.601 +02:00 [INF] Executed endpoint 'Order_App.Controllers.AuthController.Login (Order_App)'
+2026-08-27 15:03:05.861 +02:00 [INF] Executed endpoint '/orderHub/negotiate'
+2026-08-27 15:03:05.889 +02:00 [INF] Request starting HTTP/1.1 GET http://localhost:5174/orderHub?id=Rt1-sLTccZLbpOdzTTc6lA - null null
+2026-08-27 15:03:05.976 +02:00 [INF] HTTP POST /orderHub/negotiate responded 200 in 1441.8177 ms
+2026-08-27 15:03:05.987 +02:00 [ERR] HTTP POST /api/auth/login responded 500 in 12086.3886 ms
+Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException: Unexpected end of request content.
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1ContentLengthMessageBody.ReadAsyncInternal(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpRequestStream.ReadAsyncInternal(Memory`1 destination, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Text.Json.Serialization.StreamReadBufferState.ReadAsync(Stream stream, CancellationToken cancellationToken, Boolean fillBuffer)
+   at System.Text.Json.Serialization.Metadata.JsonTypeInfo`1.DeserializeAsync[TReadBufferState,TStream](TStream utf8Json, TReadBufferState bufferState, CancellationToken cancellationToken)
+   at System.Text.Json.Serialization.Metadata.JsonTypeInfo`1.DeserializeAsObjectAsync(Stream utf8Json, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Mvc.Formatters.SystemTextJsonInputFormatter.ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
+   at Microsoft.AspNetCore.Mvc.Formatters.SystemTextJsonInputFormatter.ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
+   at Microsoft.AspNetCore.Mvc.ModelBinding.Binders.BodyModelBinder.BindModelAsync(ModelBindingContext bindingContext)
+   at Microsoft.AspNetCore.Mvc.ModelBinding.ParameterBinder.BindModelAsync(ActionContext actionContext, IModelBinder modelBinder, IValueProvider valueProvider, ParameterDescriptor parameter, ModelMetadata metadata, Object value, Object container)
+   at Microsoft.AspNetCore.Mvc.Controllers.ControllerBinderDelegateProvider.<>c__DisplayClass0_0.<<CreateBinderDelegate>g__Bind|0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+2026-08-27 15:03:06.032 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:03:06.393 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 200 316 application/json 9492.3326ms
+2026-08-27 15:03:09.417 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/api/auth/login - 499 null null 19677.8023ms
+2026-08-27 15:03:09.423 +02:00 [INF] Executing endpoint '/orderHub'
+2026-08-27 15:03:45.555 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/api/auth/register - null null
+2026-08-27 15:03:49.787 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:03:50.448 +02:00 [INF] HTTP OPTIONS /api/auth/register responded 204 in 661.4847 ms
+2026-08-27 15:03:51.127 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/api/auth/register - 204 null null 5571.1688ms
+2026-08-27 15:03:52.215 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/api/auth/register - application/json 66
+2026-08-27 15:03:53.172 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:03:53.915 +02:00 [INF] Executing endpoint 'Order_App.Controllers.AuthController.Register (Order_App)'
+2026-08-27 15:03:54.619 +02:00 [INF] Route matched with {action = "Register", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Register(Order_App.Dtos.RegisterDto) on controller Order_App.Controllers.AuthController (Order_App).
+2026-08-27 15:03:56.184 +02:00 [INF] Executing BadRequestObjectResult, writing value of type 'Microsoft.AspNetCore.Mvc.ValidationProblemDetails'.
+2026-08-27 15:03:57.075 +02:00 [INF] Executed action Order_App.Controllers.AuthController.Register (Order_App) in 973.2097ms
+2026-08-27 15:03:57.964 +02:00 [INF] Executed endpoint 'Order_App.Controllers.AuthController.Register (Order_App)'
+2026-08-27 15:03:58.920 +02:00 [INF] HTTP POST /api/auth/register responded 400 in 5748.7954 ms
+2026-08-27 15:04:00.334 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/api/auth/register - null null
+2026-08-27 15:04:00.625 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:04:00.584 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/api/auth/register - 400 null application/problem+json; charset=utf-8 8369.2504ms
+2026-08-27 15:04:01.505 +02:00 [INF] HTTP OPTIONS /api/auth/register responded 204 in 880.4865 ms
+2026-08-27 15:04:02.593 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/api/auth/register - 204 null null 2259.1503ms
+2026-08-27 15:04:03.047 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/api/auth/register - application/json 66
+2026-08-27 15:04:05.031 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/api/auth/register - application/json 66
+2026-08-27 15:04:05.133 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:04:06.406 +02:00 [INF] Executing endpoint 'Order_App.Controllers.AuthController.Register (Order_App)'
+2026-08-27 15:04:06.391 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:04:06.424 +02:00 [INF] Route matched with {action = "Register", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Register(Order_App.Dtos.RegisterDto) on controller Order_App.Controllers.AuthController (Order_App).
+2026-08-27 15:04:06.466 +02:00 [INF] Executing endpoint 'Order_App.Controllers.AuthController.Register (Order_App)'
+2026-08-27 15:04:07.926 +02:00 [INF] Executing BadRequestObjectResult, writing value of type 'Microsoft.AspNetCore.Mvc.ValidationProblemDetails'.
+2026-08-27 15:04:08.029 +02:00 [INF] Executed action Order_App.Controllers.AuthController.Register (Order_App) in 114.8573ms
+2026-08-27 15:04:07.954 +02:00 [INF] Route matched with {action = "Register", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Register(Order_App.Dtos.RegisterDto) on controller Order_App.Controllers.AuthController (Order_App).
+2026-08-27 15:04:08.981 +02:00 [INF] Executed endpoint 'Order_App.Controllers.AuthController.Register (Order_App)'
+2026-08-27 15:04:09.131 +02:00 [INF] Executing BadRequestObjectResult, writing value of type 'Microsoft.AspNetCore.Mvc.ValidationProblemDetails'.
+2026-08-27 15:04:10.134 +02:00 [INF] HTTP POST /api/auth/register responded 400 in 5001.4994 ms
+2026-08-27 15:04:12.675 +02:00 [INF] Executed action Order_App.Controllers.AuthController.Register (Order_App) in 3570.1293ms
+2026-08-27 15:04:14.907 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/api/auth/register - 400 null application/problem+json; charset=utf-8 11859.9107ms
+2026-08-27 15:04:15.374 +02:00 [INF] Executed endpoint 'Order_App.Controllers.AuthController.Register (Order_App)'
+2026-08-27 15:04:20.950 +02:00 [INF] HTTP POST /api/auth/register responded 400 in 14559.7792 ms
+2026-08-27 15:04:24.192 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/api/auth/register - 400 null application/problem+json; charset=utf-8 19161.1276ms
+2026-08-27 15:07:04.521 +02:00 [INF] Executed endpoint '/orderHub'
+2026-08-27 15:07:05.043 +02:00 [INF] HTTP GET /orderHub responded 101 in 239011.3587 ms
+2026-08-27 15:07:06.496 +02:00 [INF] Request finished HTTP/1.1 GET http://localhost:5174/orderHub?id=Rt1-sLTccZLbpOdzTTc6lA - 101 null null 240607.103ms
+2026-08-27 15:07:18.225 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null null
+2026-08-27 15:07:20.577 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:07:20.693 +02:00 [INF] HTTP OPTIONS /orderHub/negotiate responded 204 in 115.4612 ms
+2026-08-27 15:07:21.149 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 204 null null 2923.933ms
+2026-08-27 15:07:21.169 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null 0
+2026-08-27 15:07:22.141 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:07:22.362 +02:00 [INF] Executing endpoint '/orderHub/negotiate'
+2026-08-27 15:07:22.637 +02:00 [INF] Executed endpoint '/orderHub/negotiate'
+2026-08-27 15:07:22.944 +02:00 [INF] HTTP POST /orderHub/negotiate responded 200 in 803.9387 ms
+2026-08-27 15:07:23.424 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 200 316 application/json 2254.7735ms
+2026-08-27 15:07:25.443 +02:00 [INF] Request starting HTTP/1.1 GET http://localhost:5174/orderHub?id=6sTojEAH1Gv3MMtEpdaxwA - null null
+2026-08-27 15:07:25.658 +02:00 [INF] CORS policy execution successful.
+2026-08-27 15:07:25.954 +02:00 [INF] Executing endpoint '/orderHub'
+2026-08-27 15:57:17.573 +02:00 [INF] Executed endpoint '/orderHub'
+2026-08-27 15:57:19.004 +02:00 [INF] HTTP GET /orderHub responded 101 in 2992899.6763 ms

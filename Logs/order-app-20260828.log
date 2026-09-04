@@ -1,0 +1,11 @@
+2026-08-27 16:07:31.645 +02:00 [INF] Request finished HTTP/1.1 GET http://localhost:5174/orderHub?id=6sTojEAH1Gv3MMtEpdaxwA - 101 null null 3606100.2579ms
+2026-08-28 08:20:41.302 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null null
+2026-08-28 08:20:48.832 +02:00 [INF] CORS policy execution successful.
+2026-08-28 08:21:01.801 +02:00 [INF] HTTP OPTIONS /orderHub/negotiate responded 204 in 14331.7355 ms
+2026-08-28 08:21:16.687 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 204 null null 35385.1317ms
+2026-08-28 08:21:17.174 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null 0
+2026-08-28 08:21:48.670 +02:00 [INF] CORS policy execution successful.
+2026-08-28 08:21:49.391 +02:00 [INF] Executing endpoint '/orderHub/negotiate'
+2026-08-28 08:21:52.565 +02:00 [INF] Executed endpoint '/orderHub/negotiate'
+2026-08-28 08:21:53.475 +02:00 [INF] HTTP POST /orderHub/negotiate responded 200 in 4808.2592 ms
+2026-08-28 08:22:01.527 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 200 316 application/json 44352.9417ms

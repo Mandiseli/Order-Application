@@ -102,7 +102,12 @@ public class AuthService
 
     private string GenerateAccessToken(User user)
     {
-        var key = _config["Jwt:Key"] ?? throw new Exception("JWT key missing.");
+        var key = Environment.GetEnvironmentVariable("JWT_KEY")
+                  ?? _config["Jwt:Key"]
+                  ?? throw new Exception("JWT key missing.");
+
+        if (Encoding.UTF8.GetByteCount(key) < 32)
+            throw new Exception("JWT key must be at least 32 bytes long.");
 
         var claims = new[]
         {
