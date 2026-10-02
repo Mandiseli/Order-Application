@@ -1,19 +1,24 @@
+import { useState } from "react";
+
 interface Props {
   src?: string;
   alt: string;
+  className?: string;
 }
 
-const fallback =
-  "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&auto=format&fit=crop";
+const fallback = "/restaurant-fallback.svg";
 
-export default function RestaurantImage({ src, alt }: Props) {
+export default function RestaurantImage({ src, alt, className = "" }: Props) {
+  const [imageSrc, setImageSrc] = useState(src?.trim() || fallback);
+
   return (
-    <div className="restaurant-image">
+    <div className={`restaurant-image ${className}`.trim()}>
       <img
-        src={src && src.trim() !== "" ? src : fallback}
+        src={imageSrc}
         alt={alt}
-        onError={(e) => {
-          e.currentTarget.src = fallback;
+        loading="lazy"
+        onError={() => {
+          if (imageSrc !== fallback) setImageSrc(fallback);
         }}
       />
     </div>

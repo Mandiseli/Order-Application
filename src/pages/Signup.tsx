@@ -1,43 +1,96 @@
 import { useState } from "react";
-import { api } from "../api/api";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Link } from "react-router-dom";
+import { api, getApiErrorMessage } from "../api/api";
 
 export default function Signup() {
+  const navigate = useNavigate();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [employeeNumber, setEmployeeNumber] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const signup = async () => {
-    if (!username.trim()) {
-      toast.error("Username is required");
+    const cleanUsername = username.trim();
+    const cleanEmployeeNumber = employeeNumber.trim().toUpperCase();
+
+    if (!cleanUsername) {
+      toast.error("Username is required.");
       return;
     }
 
-    if (!password.trim()) {
-      toast.error("Password is required");
+    if (cleanUsername.length < 3) {
+      toast.error("Username must be at least 3 characters.");
       return;
     }
 
-    if (!employeeNumber.trim()) {
-      toast.error("Employee number is required");
+    if (!password) {
+      toast.error("Password is required.");
+      return;
+    }
+
+    if (password.length < 8) {
+      toast.error("Password must be at least 8 characters.");
+      return;
+    }
+
+    if (!cleanEmployeeNumber) {
+      toast.error("Employee number is required.");
       return;
     }
 
     try {
-      const res = await api.post("/auth/register", {
-        username,
+      setLoading(true);
+
+      const response = await api.post("/auth/register", {
+        username: cleanUsername,
         password,
-        employeeNumber
+        employeeNumber: cleanEmployeeNumber
       });
 
-      localStorage.setItem("accessToken", res.data.accessToken);
-      localStorage.setItem("refreshToken", res.data.refreshToken);
+      const accessToken =
+        response.data?.accessToken ?? response.data?.token;
 
-      toast.success("Account created successfully");
-      window.location.href = "/employee-dashboard";
-    } catch (error: any) {
-      toast.error(error.response?.data || "Signup failed");
+      const refreshToken = response.data?.refreshToken;
+
+      if (!accessToken) {
+        throw new Error(
+          "Registration succeeded, but no access token was returned."
+        );
+      }
+
+      localStorage.setItem("accessToken", accessToken);
+
+      if (refreshToken) {
+        localStorage.setItem("refreshToken", refreshToken);
+      }
+
+      if (response.data?.role) {
+        localStorage.setItem("role", response.data.role);
+      }
+
+      if (response.data?.employeeNumber) {
+        localStorage.setItem(
+          "employeeNumber",
+          response.data.employeeNumber
+        );
+      }
+
+      toast.success("Account created successfully.");
+
+      navigate("/employee-dashboard", { replace: true });
+    } catch (error: unknown) {
+      console.error("Registration error:", error);
+
+      toast.error(
+        getApiErrorMessage(
+          error,
+          "Registration failed. Please check your details."
+        )
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -46,11 +99,18 @@ export default function Signup() {
       <div className="card auth-card">
         <h2>Create Employee Account</h2>
 
+        <p className="muted">
+          Register using your existing employee number.
+        </p>
+
         <input
           className="input"
           value={employeeNumber}
-          onChange={(e) => setEmployeeNumber(e.target.value)}
+          onChange={(e) =>
+            setEmployeeNumber(e.target.value.toUpperCase())
+          }
           placeholder="Employee Number e.g. EMP001"
+          disabled={loading}
         />
 
         <input
@@ -58,6 +118,8 @@ export default function Signup() {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           placeholder="Username"
+          autoComplete="username"
+          disabled={loading}
         />
 
         <input
@@ -66,14 +128,21 @@ export default function Signup() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Password"
+          autoComplete="new-password"
+          disabled={loading}
         />
 
-        <button className="button button-success" onClick={signup}>
-          Sign Up
+        <button
+          className="button button-success"
+          onClick={signup}
+          disabled={loading}
+        >
+          {loading ? "Creating Account..." : "Sign Up"}
         </button>
 
         <p className="auth-link">
-          Already have an account? <Link to="/login">Login</Link>
+          Already have an account?{" "}
+          <Link to="/login">Login</Link>
         </p>
       </div>
     </div>

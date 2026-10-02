@@ -15,7 +15,6 @@ export interface GeoRestaurant {
   imageUrl?: string;
 }
 
-
 export interface CartItem {
   menuItemId: number;
   name: string;
@@ -28,6 +27,8 @@ export interface MenuItem {
   name: string;
   description: string;
   price: number;
+  restaurantId: number;
+  isAvailable?: boolean;
 }
 
 export interface Restaurant {
@@ -35,15 +36,8 @@ export interface Restaurant {
   name: string;
   locationDescription: string;
   contactNumber: string;
+  imageUrl?: string;
   menuItems: MenuItem[];
-}
-
-export interface MenuItem {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  restaurantId: number;
 }
 
 export interface OrderItem {
@@ -55,11 +49,12 @@ export interface OrderItem {
 
 export interface Order {
   id: number;
+  employeeId?: number;
   employeeName: string;
   employeeNumber: string;
   totalAmount: number;
   status: string;
-  estimatedDeliveryTime: string;
+  estimatedDeliveryTime?: string;
   orderDate: string;
   items: OrderItem[];
 }

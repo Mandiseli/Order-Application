@@ -14,31 +14,76 @@ interface Props {
 
 export default function EmployeeSelector({ onSelect }: Props) {
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    api.get<Employee[]>("/employees")
-      .then((res) => {
-        console.log("Employees loaded:", res.data);
-        setEmployees(res.data);
-      })
-      .catch((err) => {
+    let mounted = true;
+
+    const loadEmployees = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await api.get<Employee[]>("/employees");
+
+        if (mounted) {
+          setEmployees(response.data ?? []);
+        }
+      } catch (err) {
         console.error("Failed to load employees:", err);
-      });
+
+        if (mounted) {
+          setError("Failed to load employees.");
+          setEmployees([]);
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadEmployees();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   return (
-    <select
-      className="input"
-      onChange={(e) => onSelect(e.target.value)}
-      defaultValue=""
-    >
-      <option value="">-- Select Employee --</option>
+    <div className="employee-selector">
+      <label htmlFor="employee-select" className="selector-label">
+        Employee
+      </label>
 
-      {employees.map((emp) => (
-        <option key={emp.id} value={emp.employeeNumber}>
-          {emp.name} ({emp.employeeNumber}) - R{Number(emp.balance).toFixed(2)}
+      <select
+        id="employee-select"
+        className="input"
+        defaultValue=""
+        disabled={loading}
+        onChange={(event) => onSelect(event.target.value)}
+      >
+        <option value="">
+          {loading ? "Loading employees..." : "-- Select Employee --"}
         </option>
-      ))}
-    </select>
+
+        {employees.map((employee) => (
+          <option
+            key={employee.id}
+            value={employee.employeeNumber}
+          >
+            {employee.name} ({employee.employeeNumber}) - R
+            {Number(employee.balance ?? 0).toFixed(2)}
+          </option>
+        ))}
+      </select>
+
+      {error && (
+        <small className="error-message">
+          {error}
+        </small>
+      )}
+    </div>
   );
 }

@@ -5,7 +5,7 @@ import CitySelector from "../components/CitySelector";
 import EmployeeSelector from "../components/EmployeeSelector";
 import RestaurantImage from "../components/RestaurantImage";
 import { useCart } from "../hooks/useCart";
-import { getSampleMenu } from "../data/sampleMenus";
+import { getSampleMenu } from "../data/SampleMenus";
 import type { GeoRestaurant } from "../types";
 import { getUserFromToken } from "../utils/auth";
 
