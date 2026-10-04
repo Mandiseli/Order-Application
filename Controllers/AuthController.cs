@@ -18,39 +18,84 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
         try
         {
-            return Ok(await _auth.LoginAsync(dto));
+            var result = await _auth.LoginAsync(dto);
+
+            return Ok(result);
         }
         catch (Exception ex)
         {
-            return Unauthorized(ex.Message);
+            return Unauthorized(new
+            {
+                message = ex.Message
+            });
         }
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto dto)
     {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
         try
         {
-            return Ok(await _auth.RegisterEmployeeAsync(dto));
+            var result = await _auth.RegisterEmployeeAsync(dto);
+
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new
+            {
+                message = ex.Message
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new
+            {
+                message = ex.Message
+            });
         }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(new
+            {
+                message = ex.Message
+            });
         }
     }
 
     [HttpPost("refresh")]
-    public async Task<IActionResult> Refresh([FromBody] RefreshTokenDto dto)
+    public async Task<IActionResult> Refresh(
+        [FromBody] RefreshTokenDto dto)
     {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
         try
         {
-            return Ok(await _auth.RefreshAsync(dto.RefreshToken));
+            var result = await _auth.RefreshAsync(dto.RefreshToken);
+
+            return Ok(result);
         }
         catch (Exception ex)
         {
-            return Unauthorized(ex.Message);
+            return Unauthorized(new
+            {
+                message = ex.Message
+            });
         }
     }
 }

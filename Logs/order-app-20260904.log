@@ -1,0 +1,327 @@
+2026-09-04 13:26:33.537 +02:00 [INF] Executed DbCommand (164ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='Cafeteria' AND TABLE_NAME='__EFMigrationsHistory';
+2026-09-04 13:26:34.035 +02:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='Cafeteria' AND TABLE_NAME='__EFMigrationsHistory';
+2026-09-04 13:26:34.090 +02:00 [INF] Executed DbCommand (3ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT `MigrationId`, `ProductVersion`
+FROM `__EFMigrationsHistory`
+ORDER BY `MigrationId`;
+2026-09-04 13:26:34.158 +02:00 [INF] No migrations were applied. The database is already up to date.
+2026-09-04 13:26:35.182 +02:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT EXISTS (
+    SELECT 1
+    FROM `Employees` AS `e`)
+2026-09-04 13:26:38.721 +02:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT EXISTS (
+    SELECT 1
+    FROM `Users` AS `u`)
+2026-09-04 13:26:41.269 +02:00 [INF] Order Application API starting...
+2026-09-04 13:26:41.338 +02:00 [INF] User profile is available. Using 'C:\Users\lenovo\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-09-04 13:26:41.598 +02:00 [INF] Now listening on: http://localhost:5174
+2026-09-04 13:26:41.870 +02:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-09-04 13:26:42.111 +02:00 [INF] Hosting environment: Development
+2026-09-04 13:26:42.113 +02:00 [INF] Content root path: C:\Users\lenovo\source\repos\Order Application\Backend\Order_App
+2026-09-04 13:43:29.089 +02:00 [WRN] As of ""2026-09-04T11:43:28.7315484+00:00"", the heartbeat has been running for ""00:00:02.1772574"" which is longer than ""00:00:01"". This could be caused by thread pool starvation.
+2026-09-04 13:45:39.921 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null null
+2026-09-04 13:45:39.920 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/api/auth/login - null null
+2026-09-04 13:45:41.353 +02:00 [INF] CORS policy execution successful.
+2026-09-04 13:45:41.360 +02:00 [INF] CORS policy execution successful.
+2026-09-04 13:45:41.732 +02:00 [INF] HTTP OPTIONS /api/auth/login responded 204 in 1168.9317 ms
+2026-09-04 13:45:41.779 +02:00 [INF] HTTP OPTIONS /orderHub/negotiate responded 204 in 1212.4087 ms
+2026-09-04 13:45:42.543 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/api/auth/login - 204 null null 2700.8237ms
+2026-09-04 13:45:42.921 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 204 null null 3058.0573ms
+2026-09-04 13:45:43.276 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/api/auth/login - application/json 42
+2026-09-04 13:45:43.956 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null 0
+2026-09-04 13:45:44.070 +02:00 [INF] CORS policy execution successful.
+2026-09-04 13:45:44.309 +02:00 [INF] CORS policy execution successful.
+2026-09-04 13:45:46.628 +02:00 [INF] Executing endpoint 'Order_App.Controllers.AuthController.Login (Order_App)'
+2026-09-04 13:45:46.655 +02:00 [INF] Executing endpoint '/orderHub/negotiate'
+2026-09-04 13:45:47.611 +02:00 [INF] Executed endpoint '/orderHub/negotiate'
+2026-09-04 13:45:47.632 +02:00 [INF] Request starting HTTP/1.1 GET http://localhost:5174/orderHub?id=rzDdaCIE0SZDxPs60hh65g - null null
+2026-09-04 13:45:47.770 +02:00 [INF] HTTP POST /orderHub/negotiate responded 200 in 3463.0014 ms
+2026-09-04 13:45:47.790 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 200 316 application/json 3833.7336ms
+2026-09-04 13:45:47.889 +02:00 [INF] Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(Order_App.Dtos.LoginDto) on controller Order_App.Controllers.AuthController (Order_App).
+2026-09-04 13:45:47.896 +02:00 [INF] CORS policy execution successful.
+2026-09-04 13:45:48.311 +02:00 [INF] Executing endpoint '/orderHub'
+2026-09-04 13:46:12.655 +02:00 [INF] Executed DbCommand (1,183ms) [Parameters=[@__dto_Username_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT `u`.`Id`, `u`.`EmployeeNumber`, `u`.`PasswordHash`, `u`.`RefreshToken`, `u`.`RefreshTokenExpiresAt`, `u`.`Role`, `u`.`Username`
+FROM `Users` AS `u`
+WHERE `u`.`Username` = @__dto_Username_0
+LIMIT 1
+2026-09-04 13:46:18.229 +02:00 [INF] Executing UnauthorizedObjectResult, writing value of type 'System.String'.
+2026-09-04 13:46:20.087 +02:00 [INF] Executed action Order_App.Controllers.AuthController.Login (Order_App) in 31715.8428ms
+2026-09-04 13:46:21.839 +02:00 [INF] Executed endpoint 'Order_App.Controllers.AuthController.Login (Order_App)'
+2026-09-04 13:46:24.230 +02:00 [INF] HTTP POST /api/auth/login responded 401 in 40218.8824 ms
+2026-09-04 13:46:26.443 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/api/auth/login - 401 null text/plain; charset=utf-8 43166.6986ms
+2026-09-04 13:47:05.058 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/api/auth/register - null null
+2026-09-04 13:47:05.140 +02:00 [INF] CORS policy execution successful.
+2026-09-04 13:47:05.155 +02:00 [INF] HTTP OPTIONS /api/auth/register responded 204 in 15.0555 ms
+2026-09-04 13:47:05.188 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/api/auth/register - 204 null null 129.2543ms
+2026-09-04 13:47:05.209 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/api/auth/register - application/json 71
+2026-09-04 13:47:05.226 +02:00 [INF] CORS policy execution successful.
+2026-09-04 13:47:05.237 +02:00 [INF] Executing endpoint 'Order_App.Controllers.AuthController.Register (Order_App)'
+2026-09-04 13:47:05.262 +02:00 [INF] Route matched with {action = "Register", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Register(Order_App.Dtos.RegisterDto) on controller Order_App.Controllers.AuthController (Order_App).
+2026-09-04 13:47:05.527 +02:00 [INF] Executed DbCommand (29ms) [Parameters=[@__dto_EmployeeNumber_0='?' (Size = 255)], CommandType='"Text"', CommandTimeout='30']
+SELECT `e`.`Id`, `e`.`Balance`, `e`.`EmployeeNumber`, `e`.`LastDepositMonth`, `e`.`Name`
+FROM `Employees` AS `e`
+WHERE `e`.`EmployeeNumber` = @__dto_EmployeeNumber_0
+LIMIT 1
+2026-09-04 13:47:05.543 +02:00 [INF] Executing BadRequestObjectResult, writing value of type 'System.String'.
+2026-09-04 13:47:05.551 +02:00 [INF] Executed action Order_App.Controllers.AuthController.Register (Order_App) in 281.0865ms
+2026-09-04 13:47:05.560 +02:00 [INF] Executed endpoint 'Order_App.Controllers.AuthController.Register (Order_App)'
+2026-09-04 13:47:05.562 +02:00 [INF] HTTP POST /api/auth/register responded 400 in 336.5590 ms
+2026-09-04 13:47:05.576 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/api/auth/register - 400 null text/plain; charset=utf-8 366.8865ms
+2026-09-04 14:00:22.683 +02:00 [INF] Executed endpoint '/orderHub'
+2026-09-04 14:00:22.824 +02:00 [INF] HTTP GET /orderHub responded 101 in 875029.4013 ms
+2026-09-04 14:00:23.239 +02:00 [INF] Request finished HTTP/1.1 GET http://localhost:5174/orderHub?id=rzDdaCIE0SZDxPs60hh65g - 101 null null 875597.4483ms
+2026-09-04 14:00:23.622 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null null
+2026-09-04 14:00:23.653 +02:00 [INF] CORS policy execution successful.
+2026-09-04 14:00:23.674 +02:00 [INF] HTTP OPTIONS /orderHub/negotiate responded 204 in 36.7734 ms
+2026-09-04 14:00:23.683 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 204 null null 61.3777ms
+2026-09-04 14:00:23.699 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null 0
+2026-09-04 14:00:23.721 +02:00 [INF] CORS policy execution successful.
+2026-09-04 14:00:23.743 +02:00 [INF] Executing endpoint '/orderHub/negotiate'
+2026-09-04 14:00:23.771 +02:00 [INF] Executed endpoint '/orderHub/negotiate'
+2026-09-04 14:00:23.818 +02:00 [INF] HTTP POST /orderHub/negotiate responded 200 in 96.7899 ms
+2026-09-04 14:00:23.853 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 200 316 application/json 154.5803ms
+2026-09-04 14:00:24.000 +02:00 [INF] Request starting HTTP/1.1 GET http://localhost:5174/orderHub?id=goAuVTkTAeEumo685IetAQ - null null
+2026-09-04 14:00:24.037 +02:00 [INF] CORS policy execution successful.
+2026-09-04 14:00:24.039 +02:00 [INF] Executing endpoint '/orderHub'
+2026-09-04 14:01:42.343 +02:00 [INF] Executed endpoint '/orderHub'
+2026-09-04 14:01:42.367 +02:00 [INF] HTTP GET /orderHub responded 101 in 78353.4866 ms
+2026-09-04 14:01:42.419 +02:00 [INF] Request finished HTTP/1.1 GET http://localhost:5174/orderHub?id=goAuVTkTAeEumo685IetAQ - 101 null null 78419.1193ms
+2026-09-04 14:01:45.308 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null null
+2026-09-04 14:01:45.326 +02:00 [INF] CORS policy execution successful.
+2026-09-04 14:01:45.332 +02:00 [INF] HTTP OPTIONS /orderHub/negotiate responded 204 in 6.9177 ms
+2026-09-04 14:01:45.340 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 204 null null 32.0072ms
+2026-09-04 14:01:45.344 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null 0
+2026-09-04 14:01:45.365 +02:00 [INF] CORS policy execution successful.
+2026-09-04 14:01:45.371 +02:00 [INF] Executing endpoint '/orderHub/negotiate'
+2026-09-04 14:01:45.376 +02:00 [INF] Executed endpoint '/orderHub/negotiate'
+2026-09-04 14:01:45.386 +02:00 [INF] HTTP POST /orderHub/negotiate responded 200 in 20.5150 ms
+2026-09-04 14:01:45.394 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 200 316 application/json 49.0027ms
+2026-09-04 14:01:45.517 +02:00 [INF] Request starting HTTP/1.1 GET http://localhost:5174/orderHub?id=DBmiMiWCmgTZ1jqi5s12Yw - null null
+2026-09-04 14:01:45.528 +02:00 [INF] CORS policy execution successful.
+2026-09-04 14:01:45.533 +02:00 [INF] Executing endpoint '/orderHub'
+2026-09-04 14:03:04.861 +02:00 [INF] Application is shutting down...
+2026-09-04 14:03:04.997 +02:00 [INF] Executed endpoint '/orderHub'
+2026-09-04 14:03:05.079 +02:00 [INF] HTTP GET /orderHub responded 101 in 79551.1442 ms
+2026-09-04 14:03:05.145 +02:00 [INF] Request finished HTTP/1.1 GET http://localhost:5174/orderHub?id=DBmiMiWCmgTZ1jqi5s12Yw - 101 null null 79628.1027ms
+2026-09-04 14:41:31.232 +02:00 [INF] Executed DbCommand (100ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='Cafeteria' AND TABLE_NAME='__EFMigrationsHistory';
+2026-09-04 14:41:31.394 +02:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='Cafeteria' AND TABLE_NAME='__EFMigrationsHistory';
+2026-09-04 14:41:31.451 +02:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT `MigrationId`, `ProductVersion`
+FROM `__EFMigrationsHistory`
+ORDER BY `MigrationId`;
+2026-09-04 14:41:31.486 +02:00 [INF] No migrations were applied. The database is already up to date.
+2026-09-04 14:41:31.879 +02:00 [INF] Executed DbCommand (5ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT EXISTS (
+    SELECT 1
+    FROM `Employees` AS `e`)
+2026-09-04 14:41:31.895 +02:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT EXISTS (
+    SELECT 1
+    FROM `Users` AS `u`)
+2026-09-04 14:41:31.906 +02:00 [INF] Order Application API starting...
+2026-09-04 14:41:31.955 +02:00 [INF] User profile is available. Using 'C:\Users\lenovo\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-09-04 14:41:32.191 +02:00 [INF] Now listening on: http://localhost:5174
+2026-09-04 14:41:32.216 +02:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-09-04 14:41:32.222 +02:00 [INF] Hosting environment: Development
+2026-09-04 14:41:32.234 +02:00 [INF] Content root path: C:\Users\lenovo\source\repos\Order Application\Backend\Order_App
+2026-09-04 14:43:33.126 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null null
+2026-09-04 14:43:33.270 +02:00 [INF] CORS policy execution successful.
+2026-09-04 14:43:33.319 +02:00 [INF] HTTP OPTIONS /orderHub/negotiate responded 204 in 151.0483 ms
+2026-09-04 14:43:33.447 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 204 null null 330.378ms
+2026-09-04 14:43:33.458 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null 0
+2026-09-04 14:43:33.486 +02:00 [INF] CORS policy execution successful.
+2026-09-04 14:43:33.628 +02:00 [INF] Executing endpoint '/orderHub/negotiate'
+2026-09-04 14:43:33.670 +02:00 [INF] Executed endpoint '/orderHub/negotiate'
+2026-09-04 14:43:33.698 +02:00 [INF] Request starting HTTP/1.1 GET http://localhost:5174/orderHub?id=SYuaxZg4F17snYY9ugHfMQ - null null
+2026-09-04 14:43:33.705 +02:00 [INF] HTTP POST /orderHub/negotiate responded 200 in 223.7312 ms
+2026-09-04 14:43:33.729 +02:00 [INF] CORS policy execution successful.
+2026-09-04 14:43:33.732 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 200 316 application/json 274.6076ms
+2026-09-04 14:43:33.738 +02:00 [INF] Executing endpoint '/orderHub'
+2026-09-04 14:45:59.124 +02:00 [INF] Executed endpoint '/orderHub'
+2026-09-04 14:45:59.939 +02:00 [INF] HTTP GET /orderHub responded 101 in 146229.1611 ms
+2026-09-04 14:46:00.139 +02:00 [INF] Request finished HTTP/1.1 GET http://localhost:5174/orderHub?id=SYuaxZg4F17snYY9ugHfMQ - 101 null null 146440.8205ms
+2026-09-04 19:26:00.297 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null null
+2026-09-04 19:26:27.629 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:26:28.836 +02:00 [INF] HTTP OPTIONS /orderHub/negotiate responded 204 in 1206.6530 ms
+2026-09-04 19:26:31.016 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 204 null null 30718.8707ms
+2026-09-04 19:26:31.049 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null 0
+2026-09-04 19:26:32.541 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:26:32.593 +02:00 [INF] Executing endpoint '/orderHub/negotiate'
+2026-09-04 19:26:32.984 +02:00 [INF] Executed endpoint '/orderHub/negotiate'
+2026-09-04 19:26:33.471 +02:00 [INF] HTTP POST /orderHub/negotiate responded 200 in 929.5558 ms
+2026-09-04 19:26:33.618 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 200 316 application/json 2569.5111ms
+2026-09-04 19:26:38.350 +02:00 [INF] Request starting HTTP/1.1 GET http://localhost:5174/orderHub?id=Fcf3OBHSAMizMVcG95H4Iw - null null
+2026-09-04 19:26:44.405 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:26:47.099 +02:00 [INF] Executing endpoint '/orderHub'
+2026-09-04 19:26:48.857 +02:00 [INF] Executed endpoint '/orderHub'
+2026-09-04 19:26:49.725 +02:00 [INF] HTTP GET /orderHub responded 404 in 5457.1509 ms
+2026-09-04 19:26:50.200 +02:00 [INF] Request finished HTTP/1.1 GET http://localhost:5174/orderHub?id=Fcf3OBHSAMizMVcG95H4Iw - 404 null null 11849.9198ms
+2026-09-04 19:26:53.946 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null null
+2026-09-04 19:27:03.090 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:27:03.684 +02:00 [INF] HTTP OPTIONS /orderHub/negotiate responded 204 in 593.7845 ms
+2026-09-04 19:27:04.994 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 204 null null 11049.15ms
+2026-09-04 19:27:05.022 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null 0
+2026-09-04 19:27:06.971 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:27:07.372 +02:00 [INF] Executing endpoint '/orderHub/negotiate'
+2026-09-04 19:27:07.920 +02:00 [INF] Executed endpoint '/orderHub/negotiate'
+2026-09-04 19:27:08.463 +02:00 [INF] HTTP POST /orderHub/negotiate responded 200 in 1491.5498 ms
+2026-09-04 19:27:09.063 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 200 316 application/json 4040.1087ms
+2026-09-04 19:27:10.678 +02:00 [INF] Request starting HTTP/1.1 GET http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - null null
+2026-09-04 19:27:10.688 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:27:10.692 +02:00 [INF] Executing endpoint '/orderHub'
+2026-09-04 19:27:10.813 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - null null
+2026-09-04 19:27:10.821 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:27:10.824 +02:00 [INF] HTTP OPTIONS /orderHub responded 204 in 2.7183 ms
+2026-09-04 19:27:10.831 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - 204 null null 18.5596ms
+2026-09-04 19:27:10.839 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - text/plain;charset=UTF-8 32
+2026-09-04 19:27:10.861 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:27:10.866 +02:00 [INF] Executing endpoint '/orderHub'
+2026-09-04 19:27:10.894 +02:00 [INF] Executed endpoint '/orderHub'
+2026-09-04 19:27:10.922 +02:00 [INF] HTTP POST /orderHub responded 200 in 61.3053 ms
+2026-09-04 19:27:10.945 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - 200 0 text/plain 106.0709ms
+2026-09-04 19:27:11.105 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - null null
+2026-09-04 19:27:11.113 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:27:11.116 +02:00 [INF] HTTP OPTIONS /orderHub responded 204 in 2.7049 ms
+2026-09-04 19:27:11.129 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - 204 null null 24.355ms
+2026-09-04 19:27:11.135 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - text/plain;charset=UTF-8 11
+2026-09-04 19:27:11.150 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:27:11.152 +02:00 [INF] Executing endpoint '/orderHub'
+2026-09-04 19:27:11.156 +02:00 [INF] Executed endpoint '/orderHub'
+2026-09-04 19:27:11.161 +02:00 [INF] HTTP POST /orderHub responded 200 in 11.1285 ms
+2026-09-04 19:27:11.165 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - 200 0 text/plain 30.1439ms
+2026-09-04 19:27:28.772 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - null null
+2026-09-04 19:27:29.032 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:27:29.135 +02:00 [INF] HTTP OPTIONS /orderHub responded 204 in 103.5189 ms
+2026-09-04 19:27:29.422 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - 204 null null 650.2315ms
+2026-09-04 19:27:29.458 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - text/plain;charset=UTF-8 11
+2026-09-04 19:27:31.988 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:27:32.617 +02:00 [INF] Executing endpoint '/orderHub'
+2026-09-04 19:27:33.351 +02:00 [INF] Executed endpoint '/orderHub'
+2026-09-04 19:27:33.825 +02:00 [INF] HTTP POST /orderHub responded 200 in 1846.5136 ms
+2026-09-04 19:27:34.952 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - 200 0 text/plain 5493.9043ms
+2026-09-04 19:27:41.292 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - null null
+2026-09-04 19:27:45.314 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:27:46.279 +02:00 [INF] HTTP OPTIONS /orderHub responded 204 in 964.3972 ms
+2026-09-04 19:27:46.795 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - 204 null null 5503.531ms
+2026-09-04 19:27:46.810 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - text/plain;charset=UTF-8 11
+2026-09-04 19:27:47.444 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:27:47.534 +02:00 [INF] Executing endpoint '/orderHub'
+2026-09-04 19:27:47.600 +02:00 [INF] Executed endpoint '/orderHub'
+2026-09-04 19:27:47.625 +02:00 [INF] HTTP POST /orderHub responded 200 in 181.7421 ms
+2026-09-04 19:27:47.647 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - 200 0 text/plain 836.7284ms
+2026-09-04 19:27:58.239 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - null null
+2026-09-04 19:27:58.401 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:27:58.420 +02:00 [INF] HTTP OPTIONS /orderHub responded 204 in 19.5614 ms
+2026-09-04 19:27:58.440 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - 204 null null 200.4388ms
+2026-09-04 19:27:58.445 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - text/plain;charset=UTF-8 11
+2026-09-04 19:27:58.638 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:27:58.650 +02:00 [INF] Executing endpoint '/orderHub'
+2026-09-04 19:27:58.685 +02:00 [INF] Executed endpoint '/orderHub'
+2026-09-04 19:27:58.889 +02:00 [INF] HTTP POST /orderHub responded 200 in 251.3236 ms
+2026-09-04 19:27:59.128 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - 200 0 text/plain 682.8553ms
+2026-09-04 19:28:12.863 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - null null
+2026-09-04 19:28:13.365 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:28:13.432 +02:00 [INF] HTTP OPTIONS /orderHub responded 204 in 67.7746 ms
+2026-09-04 19:28:13.500 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - 204 null null 637.3139ms
+2026-09-04 19:28:13.541 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - text/plain;charset=UTF-8 11
+2026-09-04 19:28:13.728 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:28:13.753 +02:00 [INF] Executing endpoint '/orderHub'
+2026-09-04 19:28:13.763 +02:00 [INF] Executed endpoint '/orderHub'
+2026-09-04 19:28:15.616 +02:00 [INF] HTTP POST /orderHub responded 200 in 1888.4366 ms
+2026-09-04 19:28:25.659 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - 200 0 text/plain 12118.024ms
+2026-09-04 19:28:41.686 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - null null
+2026-09-04 19:28:44.677 +02:00 [INF] Executed endpoint '/orderHub'
+2026-09-04 19:28:48.814 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null null
+2026-09-04 19:28:48.994 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:28:52.421 +02:00 [INF] HTTP GET /orderHub responded 200 in 101733.2576 ms
+2026-09-04 19:28:55.922 +02:00 [INF] Request finished HTTP/1.1 GET http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - 200 null text/event-stream 105244.3196ms
+2026-09-04 19:28:55.883 +02:00 [INF] HTTP OPTIONS /orderHub responded 204 in 6890.0815 ms
+2026-09-04 19:28:55.855 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:28:59.982 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - 204 null null 18296.847ms
+2026-09-04 19:29:00.004 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - text/plain;charset=UTF-8 11
+2026-09-04 19:29:00.005 +02:00 [INF] HTTP OPTIONS /orderHub/negotiate responded 204 in 4150.7651 ms
+2026-09-04 19:29:01.537 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:29:01.573 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 204 null null 12759.0844ms
+2026-09-04 19:29:01.595 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null 0
+2026-09-04 19:29:01.599 +02:00 [INF] Executing endpoint '/orderHub'
+2026-09-04 19:29:02.297 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:29:02.319 +02:00 [INF] Executed endpoint '/orderHub'
+2026-09-04 19:29:02.329 +02:00 [INF] Executing endpoint '/orderHub/negotiate'
+2026-09-04 19:29:02.388 +02:00 [INF] HTTP POST /orderHub responded 404 in 851.0991 ms
+2026-09-04 19:29:02.400 +02:00 [INF] Executed endpoint '/orderHub/negotiate'
+2026-09-04 19:29:02.608 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/orderHub?id=ug-P07r6TJF7S-gZCQw5kA - 404 null text/plain 2603.912ms
+2026-09-04 19:29:02.616 +02:00 [INF] HTTP POST /orderHub/negotiate responded 200 in 331.5494 ms
+2026-09-04 19:29:02.874 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 200 316 application/json 1278.7821ms
+2026-09-04 19:29:05.500 +02:00 [INF] Request starting HTTP/1.1 GET http://localhost:5174/orderHub?id=Vb1vct0KNO2qJPof2kD6lg - null null
+2026-09-04 19:29:16.162 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:29:26.359 +02:00 [INF] Executing endpoint '/orderHub'
+2026-09-04 19:29:28.946 +02:00 [INF] Executed endpoint '/orderHub'
+2026-09-04 19:29:31.643 +02:00 [INF] HTTP GET /orderHub responded 404 in 15481.9515 ms
+2026-09-04 19:29:31.647 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null null
+2026-09-04 19:29:32.390 +02:00 [INF] Request finished HTTP/1.1 GET http://localhost:5174/orderHub?id=Vb1vct0KNO2qJPof2kD6lg - 404 null null 26889.2899ms
+2026-09-04 19:29:37.515 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:29:38.668 +02:00 [INF] HTTP OPTIONS /orderHub/negotiate responded 204 in 1153.1364 ms
+2026-09-04 19:29:39.106 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 204 null null 7459.2886ms
+2026-09-04 19:29:39.121 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null 0
+2026-09-04 19:29:39.758 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:29:39.930 +02:00 [INF] Executing endpoint '/orderHub/negotiate'
+2026-09-04 19:29:40.256 +02:00 [INF] Executed endpoint '/orderHub/negotiate'
+2026-09-04 19:29:40.640 +02:00 [INF] HTTP POST /orderHub/negotiate responded 200 in 873.3980 ms
+2026-09-04 19:29:41.099 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 200 316 application/json 1978.0893ms
+2026-09-04 19:29:42.796 +02:00 [INF] Request starting HTTP/1.1 GET http://localhost:5174/orderHub?id=K5HzX418rXbyrJHdnORh9Q - null null
+2026-09-04 19:29:43.035 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:29:43.293 +02:00 [INF] Executing endpoint '/orderHub'
+2026-09-04 19:29:47.638 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/orderHub?id=K5HzX418rXbyrJHdnORh9Q - null null
+2026-09-04 19:29:48.033 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:29:48.209 +02:00 [INF] HTTP OPTIONS /orderHub responded 204 in 177.4243 ms
+2026-09-04 19:29:48.577 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/orderHub?id=K5HzX418rXbyrJHdnORh9Q - 204 null null 938.3759ms
+2026-09-04 19:29:48.587 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/orderHub?id=K5HzX418rXbyrJHdnORh9Q - text/plain;charset=UTF-8 32
+2026-09-04 19:29:48.654 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:29:48.757 +02:00 [INF] Executing endpoint '/orderHub'
+2026-09-04 19:29:48.876 +02:00 [INF] Executed endpoint '/orderHub'
+2026-09-04 19:29:48.941 +02:00 [INF] HTTP POST /orderHub responded 200 in 286.6992 ms
+2026-09-04 19:29:49.014 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/orderHub?id=K5HzX418rXbyrJHdnORh9Q - 200 0 text/plain 421.8864ms
+2026-09-04 19:29:54.082 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/orderHub?id=K5HzX418rXbyrJHdnORh9Q - null null
+2026-09-04 19:30:06.574 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:30:11.005 +02:00 [INF] HTTP OPTIONS /orderHub responded 204 in 4431.5515 ms
+2026-09-04 19:30:20.314 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/orderHub?id=K5HzX418rXbyrJHdnORh9Q - 204 null null 26231.5696ms
+2026-09-04 19:30:20.477 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/orderHub?id=K5HzX418rXbyrJHdnORh9Q - text/plain;charset=UTF-8 11
+2026-09-04 19:30:44.548 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:30:45.073 +02:00 [INF] Executing endpoint '/orderHub'
+2026-09-04 19:30:45.570 +02:00 [INF] Executed endpoint '/orderHub'
+2026-09-04 19:30:46.089 +02:00 [INF] HTTP POST /orderHub responded 200 in 1541.7116 ms
+2026-09-04 19:30:47.667 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/orderHub?id=K5HzX418rXbyrJHdnORh9Q - 200 0 text/plain 27190.4983ms
+2026-09-04 19:30:50.422 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/orderHub?id=K5HzX418rXbyrJHdnORh9Q - null null
+2026-09-04 19:30:59.953 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:31:01.501 +02:00 [INF] HTTP OPTIONS /orderHub responded 204 in 1548.4382 ms
+2026-09-04 19:31:03.376 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/orderHub?id=K5HzX418rXbyrJHdnORh9Q - 204 null null 12954.0075ms
+2026-09-04 19:31:03.422 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/orderHub?id=K5HzX418rXbyrJHdnORh9Q - text/plain;charset=UTF-8 11
+2026-09-04 19:31:08.236 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:31:16.116 +02:00 [INF] Executing endpoint '/orderHub'
+2026-09-04 19:31:16.215 +02:00 [INF] Executed endpoint '/orderHub'
+2026-09-04 19:31:16.622 +02:00 [INF] Executed endpoint '/orderHub'
+2026-09-04 19:31:17.725 +02:00 [INF] HTTP GET /orderHub responded 200 in 94690.1731 ms
+2026-09-04 19:31:17.740 +02:00 [INF] HTTP POST /orderHub responded 404 in 9504.9263 ms
+2026-09-04 19:31:17.782 +02:00 [INF] Request finished HTTP/1.1 GET http://localhost:5174/orderHub?id=K5HzX418rXbyrJHdnORh9Q - 200 null text/event-stream 94987.4871ms
+2026-09-04 19:31:17.834 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/orderHub?id=K5HzX418rXbyrJHdnORh9Q - 404 null text/plain 14412.0308ms
+2026-09-04 19:31:21.959 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null null
+2026-09-04 19:31:23.179 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:31:23.278 +02:00 [INF] HTTP OPTIONS /orderHub/negotiate responded 204 in 99.7789 ms
+2026-09-04 19:31:23.761 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 204 null null 1802.338ms
+2026-09-04 19:31:23.790 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - null 0
+2026-09-04 19:31:25.783 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:31:25.894 +02:00 [INF] Executing endpoint '/orderHub/negotiate'
+2026-09-04 19:31:26.135 +02:00 [INF] Executed endpoint '/orderHub/negotiate'
+2026-09-04 19:31:26.420 +02:00 [INF] HTTP POST /orderHub/negotiate responded 200 in 636.7141 ms
+2026-09-04 19:31:26.760 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/orderHub/negotiate?negotiateVersion=1 - 200 316 application/json 2969.5139ms
+2026-09-04 19:31:31.204 +02:00 [INF] Request starting HTTP/1.1 GET http://localhost:5174/orderHub?id=i938_y2NJJMwCXWDjGJtiA - null null
+2026-09-04 19:31:32.566 +02:00 [INF] CORS policy execution successful.
+2026-09-04 19:31:32.729 +02:00 [INF] Executing endpoint '/orderHub'
+2026-09-04 19:46:37.356 +02:00 [INF] Executed endpoint '/orderHub'
+2026-09-04 19:56:42.732 +02:00 [INF] HTTP GET /orderHub responded 101 in 1510168.6016 ms
