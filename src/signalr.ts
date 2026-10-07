@@ -6,206 +6,155 @@ import {
 } from "@microsoft/signalr";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL?.replace(
-    /\/api\/?$/,
-    ""
-  ) || "http://localhost:5174";
+  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ||
+  "http://localhost:5174/api";
 
-const HUB_URL = `${API_BASE_URL}/orderHub`;
+const HUB_URL = `${API_BASE_URL.replace(/\/api$/, "")}/orderHub`;
 
-export const connection: HubConnection =
-  new HubConnectionBuilder()
+let connection: HubConnection | null = null;
+let startPromise: Promise<void> | null = null;
+
+const createConnection = (): HubConnection => {
+  return new HubConnectionBuilder()
     .withUrl(HUB_URL, {
       accessTokenFactory: () =>
         localStorage.getItem("accessToken") || ""
     })
-    .withAutomaticReconnect([
-      0,
-      2000,
-      5000,
-      10000,
-      30000
-    ])
-    .configureLogging(LogLevel.Information)
+    .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+    .configureLogging(
+      import.meta.env.DEV ? LogLevel.Information : LogLevel.Warning
+    )
     .build();
+};
 
-let starting = false;
+export const getConnection = (): HubConnection => {
+  if (!connection) {
+    connection = createConnection();
 
-//
-// ------------------------------------------------------------
-// Start SignalR
-// ------------------------------------------------------------
-//
+    connection.onreconnecting(error => {
+      console.warn("SignalR reconnecting...", error);
+    });
+
+    connection.onreconnected(connectionId => {
+      console.info(
+        "SignalR reconnected:",
+        connectionId
+      );
+    });
+
+    connection.onclose(error => {
+      if (error) {
+        console.warn(
+          "SignalR connection closed:",
+          error.message
+        );
+      } else {
+        console.info("SignalR connection closed.");
+      }
+    });
+  }
+
+  return connection;
+};
+
 export const startConnection = async (): Promise<void> => {
-  const accessToken =
-    localStorage.getItem("accessToken");
-
-  if (!accessToken)
-  {
-    console.warn(
-      "SignalR not started: no access token."
-    );
-
-    return;
-  }
+  const hub = getConnection();
 
   if (
-    connection.state !==
-    HubConnectionState.Disconnected
-  )
-  {
+    hub.state === HubConnectionState.Connected ||
+    hub.state === HubConnectionState.Connecting ||
+    hub.state === HubConnectionState.Reconnecting
+  ) {
     return;
   }
 
-  if (starting)
-  {
-    return;
+  if (startPromise) {
+    return startPromise;
   }
 
-  starting = true;
+  startPromise = hub
+    .start()
+    .then(() => {
+      console.info(
+        `SignalR connected to ${HUB_URL}`
+      );
+    })
+    .catch(error => {
+      console.error(
+        "SignalR initial connection failed:",
+        error
+      );
 
-  try
-  {
-    console.log(
-      "Starting SignalR connection:",
-      HUB_URL
-    );
+      // Do not break the application if SignalR is unavailable.
+      // Orders.tsx also has polling as a fallback.
+    })
+    .finally(() => {
+      startPromise = null;
+    });
 
-    await connection.start();
-
-    console.log(
-      "SignalR connected:",
-      connection.connectionId
-    );
-  }
-  catch (error)
-  {
-    console.error(
-      "SignalR connection failed:",
-      error
-    );
-  }
-  finally
-  {
-    starting = false;
-  }
+  return startPromise;
 };
 
-//
-// ------------------------------------------------------------
-// Stop SignalR
-// ------------------------------------------------------------
-//
 export const stopConnection = async (): Promise<void> => {
-  if (
-    connection.state ===
-    HubConnectionState.Disconnected
-  )
-  {
+  if (!connection) {
     return;
   }
 
-  try
-  {
-    await connection.stop();
-
-    console.log(
-      "SignalR connection stopped."
-    );
-  }
-  catch (error)
-  {
-    console.error(
-      "SignalR stop failed:",
-      error
-    );
+  if (
+    connection.state === HubConnectionState.Connected ||
+    connection.state === HubConnectionState.Reconnecting ||
+    connection.state === HubConnectionState.Connecting
+  ) {
+    try {
+      await connection.stop();
+    } catch (error) {
+      console.warn(
+        "Failed to stop SignalR connection:",
+        error
+      );
+    }
   }
 };
 
-//
-// ------------------------------------------------------------
-// Connection events
-// ------------------------------------------------------------
-//
-connection.onreconnecting((error) =>
-{
-  console.warn(
-    "SignalR reconnecting...",
-    error
-  );
-});
+export const onOrderUpdate = (
+  handler: (order: unknown) => void
+): (() => void) => {
+  const hub = getConnection();
 
-connection.onreconnected((connectionId) =>
-{
-  console.log(
-    "SignalR reconnected:",
-    connectionId
-  );
-});
-
-connection.onclose((error) =>
-{
-  if (error)
-  {
-    console.warn(
-      "SignalR connection closed:",
-      error
-    );
-  }
-  else
-  {
-    console.log(
-      "SignalR connection closed."
-    );
-  }
-});
-
-//
-// ------------------------------------------------------------
-// Order events
-// ------------------------------------------------------------
-//
-export const registerOrderUpdateHandler = (
-  callback: (order: unknown) => void
-): void =>
-{
-  connection.on(
+  hub.on(
     "ReceiveOrderUpdate",
-    callback
+    handler
   );
+
+  return () => {
+    hub.off(
+      "ReceiveOrderUpdate",
+      handler
+    );
+  };
 };
 
-export const removeOrderUpdateHandler = (
-  callback: (order: unknown) => void
-): void =>
-{
-  connection.off(
-    "ReceiveOrderUpdate",
-    callback
-  );
-};
+export const onStatusUpdate = (
+  handler: (order: unknown) => void
+): (() => void) => {
+  const hub = getConnection();
 
-//
-// ------------------------------------------------------------
-// Status events
-// ------------------------------------------------------------
-//
-export const registerStatusUpdateHandler = (
-  callback: (order: unknown) => void
-): void =>
-{
-  connection.on(
+  hub.on(
     "ReceiveStatusUpdate",
-    callback
+    handler
   );
+
+  return () => {
+    hub.off(
+      "ReceiveStatusUpdate",
+      handler
+    );
+  };
 };
 
-export const removeStatusUpdateHandler = (
-  callback: (order: unknown) => void
-): void =>
-{
-  connection.off(
-    "ReceiveStatusUpdate",
-    callback
+export const isSignalRConnected = (): boolean => {
+  return (
+    connection?.state ===
+    HubConnectionState.Connected
   );
 };
