@@ -44,37 +44,28 @@ interface PaginatedOrders {
   totalPages: number;
 }
 
+
 const normaliseOrder = (
   value: Partial<Order>
 ): Order => {
   return {
     id: Number(value.id ?? 0),
-    employeeId:
-      value.employeeId,
-    employeeName:
-      value.employeeName ?? "",
-    employeeNumber:
-      value.employeeNumber ?? "",
-    driverId:
-      value.driverId ?? null,
-    driverName:
-      value.driverName ?? null,
-    orderDate:
-      value.orderDate ?? "",
-    totalAmount:
-      Number(value.totalAmount ?? 0),
-    status:
-      value.status ?? "Pending",
+    employeeId: value.employeeId,
+    employeeName: value.employeeName ?? "",
+    employeeNumber: value.employeeNumber ?? "",
+    driverId: value.driverId ?? null,
+    driverName: value.driverName ?? null,
+    orderDate: value.orderDate ?? "",
+    totalAmount: Number(value.totalAmount ?? 0),
+    status: value.status ?? "Pending",
     estimatedDeliveryTime:
-      value.estimatedDeliveryTime ??
-      null,
-    items: Array.isArray(
-      value.items
-    )
+      value.estimatedDeliveryTime ?? undefined,
+    items: Array.isArray(value.items)
       ? value.items
-      : []
+      : [],
   };
 };
+
 
 const extractOrders = (
   data: unknown

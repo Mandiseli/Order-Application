@@ -1,5 +1,5 @@
 import { renderHook, act } from "@testing-library/react";
-import { expect, test, describe } from "vitest";
+import { expect, test } from "vitest";
 import { useCart } from "./useCart";
 
 test("should add item to cart", () => {

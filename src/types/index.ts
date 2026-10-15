@@ -1,3 +1,4 @@
+
 export interface Employee {
   id: number;
   name: string;
@@ -52,6 +53,8 @@ export interface Order {
   employeeId?: number;
   employeeName: string;
   employeeNumber: string;
+  driverId?: number | string | null;
+  driverName?: string | null;
   totalAmount: number;
   status: string;
   estimatedDeliveryTime?: string;
