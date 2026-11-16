@@ -1,16 +1,65 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+using Serilog;
 
 namespace Order_App.Hubs;
 
-public class OrderHub : Hub
+[Authorize]
+public sealed class OrderHub : Hub
 {
-    public async Task SendOrderUpdate(object order)
+    public override async Task OnConnectedAsync()
     {
-        await Clients.All.SendAsync("ReceiveOrderUpdate", order);
+        var username =
+            Context.User?.Identity?.Name
+            ?? "Unknown";
+
+        var role =
+            Context.User?
+                .FindFirst(
+                    System.Security.Claims.ClaimTypes.Role)
+                ?.Value
+            ?? "Unknown";
+
+        var employeeNumber =
+            Context.User?
+                .FindFirst("employeeNumber")
+                ?.Value
+            ?? "Unknown";
+
+        Log.Information(
+            "SignalR client connected. " +
+            "ConnectionId={ConnectionId}, " +
+            "Username={Username}, " +
+            "Role={Role}, " +
+            "EmployeeNumber={EmployeeNumber}",
+            Context.ConnectionId,
+            username,
+            role,
+            employeeNumber);
+
+        await base.OnConnectedAsync();
     }
 
-    public async Task SendStatusUpdate(object order)
+    public override async Task OnDisconnectedAsync(
+        Exception? exception)
     {
-        await Clients.All.SendAsync("ReceiveStatusUpdate", order);
+        if (exception != null)
+        {
+            Log.Warning(
+                exception,
+                "SignalR client disconnected with error. " +
+                "ConnectionId={ConnectionId}",
+                Context.ConnectionId);
+        }
+        else
+        {
+            Log.Information(
+                "SignalR client disconnected normally. " +
+                "ConnectionId={ConnectionId}",
+                Context.ConnectionId);
+        }
+
+        await base.OnDisconnectedAsync(
+            exception);
     }
 }

@@ -7,12 +7,22 @@ using Order_App.Models;
 
 namespace Order_App.Services;
 
-public class OrderService : IOrderService
+public sealed class OrderService : IOrderService
 {
     private readonly ApplicationDbContext _context;
     private readonly IHubContext<OrderHub> _hub;
     private readonly IEmailService _emailService;
     private readonly ISmsService _smsService;
+
+    private static readonly string[] ValidStatuses =
+    {
+        "Pending",
+        "Preparing",
+        "Ready For Pickup",
+        "Out For Delivery",
+        "Delivered",
+        "Cancelled"
+    };
 
     public OrderService(
         ApplicationDbContext context,
@@ -26,26 +36,65 @@ public class OrderService : IOrderService
         _smsService = smsService;
     }
 
-    public async Task<Order?> PlaceOrderAsync(string employeeNumber, Dictionary<int, int> items)
+    /*
+     * =========================================================
+     * PLACE ORDER
+     * =========================================================
+     */
+    public async Task<Order?> PlaceOrderAsync(
+        string employeeNumber,
+        Dictionary<int, int> items)
     {
-        if (items == null || !items.Any())
-            throw new Exception("No items selected.");
+        if (string.IsNullOrWhiteSpace(employeeNumber))
+            throw new ArgumentException(
+                "Employee number is required.");
 
-        var employee = await _context.Employees.FirstOrDefaultAsync(e => e.EmployeeNumber == employeeNumber);
-        if (employee == null) throw new Exception("Employee not found.");
+        if (items == null || items.Count == 0)
+            throw new ArgumentException(
+                "No items selected.");
 
-        var menuItems = await _context.MenuItems
-            .Where(m => items.Keys.Contains(m.Id) && m.IsAvailable)
-            .ToListAsync();
+        if (items.Any(x => x.Key <= 0))
+            throw new ArgumentException(
+                "Invalid menu item.");
 
-        if (!menuItems.Any())
-            throw new Exception("Invalid or unavailable menu items.");
+        if (items.Any(x => x.Value <= 0))
+            throw new ArgumentException(
+                "Invalid quantity.");
+
+        var employee =
+            await _context.Employees
+                .FirstOrDefaultAsync(
+                    e =>
+                        e.EmployeeNumber ==
+                        employeeNumber);
+
+        if (employee == null)
+            throw new InvalidOperationException(
+                "Employee not found.");
+
+        var requestedIds =
+            items.Keys.ToList();
+
+        var menuItems =
+            await _context.MenuItems
+                .Where(
+                    m =>
+                        requestedIds.Contains(m.Id) &&
+                        m.IsAvailable)
+                .ToListAsync();
+
+        if (menuItems.Count != requestedIds.Count)
+        {
+            throw new InvalidOperationException(
+                "One or more selected menu items are unavailable.");
+        }
 
         var order = new Order
         {
             EmployeeId = employee.Id,
             Status = "Pending",
-            EstimatedDeliveryTime = "45 minutes",
+            EstimatedDeliveryTime =
+                GetEstimatedDeliveryTime("Pending"),
             OrderDate = DateTime.UtcNow
         };
 
@@ -53,434 +102,995 @@ public class OrderService : IOrderService
 
         foreach (var menuItem in menuItems)
         {
-            int qty = items[menuItem.Id];
+            var quantity =
+                items[menuItem.Id];
 
-            if (qty <= 0)
-                throw new Exception("Invalid quantity.");
+            if (quantity <= 0)
+                throw new ArgumentException(
+                    "Invalid quantity.");
 
-            total += qty * menuItem.Price;
+            total +=
+                quantity * menuItem.Price;
 
-            order.Items.Add(new OrderItem
-            {
-                MenuItemId = menuItem.Id,
-                ItemName = menuItem.Name,
-                Quantity = qty,
-                UnitPriceAtTimeOfOrder = menuItem.Price
-            });
+            order.Items.Add(
+                new OrderItem
+                {
+                    MenuItemId = menuItem.Id,
+                    ItemName = menuItem.Name,
+                    Quantity = quantity,
+                    UnitPriceAtTimeOfOrder =
+                        menuItem.Price
+                });
         }
 
+        total =
+            decimal.Round(
+                total,
+                2,
+                MidpointRounding.AwayFromZero);
+
+        if (total <= 0)
+            throw new InvalidOperationException(
+                "Order total must be greater than zero.");
+
         if (employee.Balance < total)
-            throw new Exception($"Insufficient balance. Balance: R{employee.Balance}, Total: R{total}");
+        {
+            throw new InvalidOperationException(
+                $"Insufficient balance. " +
+                $"Balance: R{employee.Balance:N2}, " +
+                $"Total: R{total:N2}");
+        }
 
         employee.Balance -= total;
         order.TotalAmount = total;
 
         _context.Orders.Add(order);
-        AddOrderTransaction(employee.Id, -total, $"Food order payment R{total}");
+
+        AddOrderTransaction(
+            employee.Id,
+            -total,
+            $"Food order payment R{total:N2}");
 
         await _context.SaveChangesAsync();
 
-        await SendOrderConfirmationAsync(order);
-        await SendOrderUpdate(order, employee);
+        await SendOrderUpdate(
+            order,
+            employee);
+
+        await SendOrderConfirmationAsync(
+            order);
 
         return order;
     }
 
-    public async Task<Order?> PlaceExternalOrderAsync(ExternalOrderDto dto)
+    /*
+     * =========================================================
+     * EXTERNAL ORDER
+     * =========================================================
+     *
+     * NOTE:
+     * This method is kept compatible with your existing
+     * ExternalOrderDto.
+     *
+     * For the final production version, the frontend should
+     * send MenuItemId + Quantity rather than trusting a client
+     * supplied price.
+     * =========================================================
+     */
+    public async Task<Order?> PlaceExternalOrderAsync(
+        ExternalOrderDto dto)
     {
-        if (dto == null) throw new Exception("Invalid order request.");
-        if (string.IsNullOrWhiteSpace(dto.EmployeeNumber)) throw new Exception("Employee number is required.");
-        if (dto.Items == null || !dto.Items.Any()) throw new Exception("Cart is empty.");
+        if (dto == null)
+            throw new ArgumentException(
+                "Invalid order request.");
 
-        var employee = await _context.Employees.FirstOrDefaultAsync(e => e.EmployeeNumber == dto.EmployeeNumber);
-        if (employee == null) throw new Exception("Employee not found.");
+        if (string.IsNullOrWhiteSpace(
+                dto.EmployeeNumber))
+        {
+            throw new ArgumentException(
+                "Employee number is required.");
+        }
+
+        if (dto.Items == null ||
+            !dto.Items.Any())
+        {
+            throw new ArgumentException(
+                "Cart is empty.");
+        }
+
+        var employee =
+            await _context.Employees
+                .FirstOrDefaultAsync(
+                    e =>
+                        e.EmployeeNumber ==
+                        dto.EmployeeNumber);
+
+        if (employee == null)
+            throw new InvalidOperationException(
+                "Employee not found.");
 
         foreach (var item in dto.Items)
         {
-            if (string.IsNullOrWhiteSpace(item.ItemName)) throw new Exception("Item name is required.");
-            if (item.Quantity <= 0) throw new Exception("Invalid item quantity.");
-            if (item.Price <= 0) throw new Exception("Invalid item price.");
+            if (string.IsNullOrWhiteSpace(
+                    item.ItemName))
+            {
+                throw new ArgumentException(
+                    "Item name is required.");
+            }
+
+            if (item.Quantity <= 0)
+            {
+                throw new ArgumentException(
+                    "Invalid item quantity.");
+            }
+
+            if (item.Price <= 0)
+            {
+                throw new ArgumentException(
+                    "Invalid item price.");
+            }
         }
 
-        decimal total = dto.Items.Sum(i => i.Price * i.Quantity);
+        var total =
+            decimal.Round(
+                dto.Items.Sum(
+                    i =>
+                        i.Price *
+                        i.Quantity),
+                2,
+                MidpointRounding.AwayFromZero);
+
+        if (total <= 0)
+            throw new InvalidOperationException(
+                "Order total must be greater than zero.");
 
         if (employee.Balance < total)
-            throw new Exception($"Insufficient balance. Balance: R{employee.Balance}, Total: R{total}");
+        {
+            throw new InvalidOperationException(
+                $"Insufficient balance. " +
+                $"Balance: R{employee.Balance:N2}, " +
+                $"Total: R{total:N2}");
+        }
 
         var order = new Order
         {
             EmployeeId = employee.Id,
             OrderDate = DateTime.UtcNow,
             Status = "Pending",
-            EstimatedDeliveryTime = "45 minutes",
+            EstimatedDeliveryTime =
+                GetEstimatedDeliveryTime("Pending"),
             TotalAmount = total
         };
 
         foreach (var item in dto.Items)
         {
-            order.Items.Add(new OrderItem
-            {
-                MenuItemId = null,
-                ItemName = item.ItemName,
-                Quantity = item.Quantity,
-                UnitPriceAtTimeOfOrder = item.Price
-            });
+            order.Items.Add(
+                new OrderItem
+                {
+                    MenuItemId = null,
+                    ItemName = item.ItemName.Trim(),
+                    Quantity = item.Quantity,
+                    UnitPriceAtTimeOfOrder =
+                        item.Price
+                });
         }
 
         employee.Balance -= total;
 
         _context.Orders.Add(order);
-        AddOrderTransaction(employee.Id, -total, $"Food order payment R{total}");
+
+        AddOrderTransaction(
+            employee.Id,
+            -total,
+            $"Food order payment R{total:N2}");
 
         await _context.SaveChangesAsync();
 
-        await SendOrderConfirmationAsync(order);
-        await SendOrderUpdate(order, employee);
+        await SendOrderUpdate(
+            order,
+            employee);
+
+        await SendOrderConfirmationAsync(
+            order);
 
         return order;
     }
 
-    public async Task<Order?> ReOrderAsync(ReOrderDto dto)
+    /*
+     * =========================================================
+     * REORDER
+     * =========================================================
+     */
+    public async Task<Order?> ReOrderAsync(
+        ReOrderDto dto)
     {
-        if (dto == null) throw new Exception("Invalid reorder request.");
-        if (string.IsNullOrWhiteSpace(dto.EmployeeNumber)) throw new Exception("Employee number is required.");
+        if (dto == null)
+            throw new ArgumentException(
+                "Invalid reorder request.");
 
-        var employee = await _context.Employees.FirstOrDefaultAsync(e => e.EmployeeNumber == dto.EmployeeNumber);
-        if (employee == null) throw new Exception("Employee not found.");
+        if (string.IsNullOrWhiteSpace(
+                dto.EmployeeNumber))
+        {
+            throw new ArgumentException(
+                "Employee number is required.");
+        }
 
-        var previousOrder = await _context.Orders
-            .Include(o => o.Items)
-            .FirstOrDefaultAsync(o => o.Id == dto.PreviousOrderId);
+        var employee =
+            await _context.Employees
+                .FirstOrDefaultAsync(
+                    e =>
+                        e.EmployeeNumber ==
+                        dto.EmployeeNumber);
 
-        if (previousOrder == null) throw new Exception("Previous order not found.");
-        if (!previousOrder.Items.Any()) throw new Exception("Previous order has no items.");
+        if (employee == null)
+            throw new InvalidOperationException(
+                "Employee not found.");
 
-        decimal total = previousOrder.Items.Sum(i => i.UnitPriceAtTimeOfOrder * i.Quantity);
+        var previousOrder =
+            await _context.Orders
+                .Include(o => o.Items)
+                .FirstOrDefaultAsync(
+                    o =>
+                        o.Id ==
+                        dto.PreviousOrderId);
+
+        if (previousOrder == null)
+            throw new InvalidOperationException(
+                "Previous order not found.");
+
+        /*
+         * Security check:
+         * an employee cannot reorder another employee's order.
+         */
+        if (previousOrder.EmployeeId !=
+            employee.Id)
+        {
+            throw new UnauthorizedAccessException(
+                "You cannot reorder another employee's order.");
+        }
+
+        if (!previousOrder.Items.Any())
+            throw new InvalidOperationException(
+                "Previous order has no items.");
+
+        var total =
+            decimal.Round(
+                previousOrder.Items.Sum(
+                    i =>
+                        i.UnitPriceAtTimeOfOrder *
+                        i.Quantity),
+                2,
+                MidpointRounding.AwayFromZero);
 
         if (employee.Balance < total)
-            throw new Exception($"Insufficient balance. Balance: R{employee.Balance}, Total: R{total}");
+        {
+            throw new InvalidOperationException(
+                $"Insufficient balance. " +
+                $"Balance: R{employee.Balance:N2}, " +
+                $"Total: R{total:N2}");
+        }
 
         var newOrder = new Order
         {
             EmployeeId = employee.Id,
             OrderDate = DateTime.UtcNow,
             Status = "Pending",
-            EstimatedDeliveryTime = "45 minutes",
+            EstimatedDeliveryTime =
+                GetEstimatedDeliveryTime("Pending"),
             TotalAmount = total
         };
 
         foreach (var item in previousOrder.Items)
         {
-            newOrder.Items.Add(new OrderItem
-            {
-                MenuItemId = item.MenuItemId,
-                ItemName = item.ItemName,
-                Quantity = item.Quantity,
-                UnitPriceAtTimeOfOrder = item.UnitPriceAtTimeOfOrder
-            });
+            newOrder.Items.Add(
+                new OrderItem
+                {
+                    MenuItemId =
+                        item.MenuItemId,
+                    ItemName =
+                        item.ItemName,
+                    Quantity =
+                        item.Quantity,
+                    UnitPriceAtTimeOfOrder =
+                        item.UnitPriceAtTimeOfOrder
+                });
         }
 
         employee.Balance -= total;
 
         _context.Orders.Add(newOrder);
-        AddOrderTransaction(employee.Id, -total, $"Re-order payment R{total}");
+
+        AddOrderTransaction(
+            employee.Id,
+            -total,
+            $"Re-order payment R{total:N2}");
 
         await _context.SaveChangesAsync();
 
-        await SendOrderConfirmationAsync(newOrder);
-        await SendOrderUpdate(newOrder, employee);
+        await SendOrderUpdate(
+            newOrder,
+            employee);
+
+        await SendOrderConfirmationAsync(
+            newOrder);
 
         return newOrder;
     }
 
-    public async Task<Order?> CancelOrderAsync(int orderId)
+    /*
+     * =========================================================
+     * CANCEL ORDER
+     * =========================================================
+     */
+    public async Task<Order?> CancelOrderAsync(
+        int orderId)
     {
-        var order = await _context.Orders
-            .Include(o => o.Employee)
-            .Include(o => o.Items)
-            .FirstOrDefaultAsync(o => o.Id == orderId);
+        var order =
+            await _context.Orders
+                .Include(o => o.Employee)
+                .Include(o => o.Driver)
+                .Include(o => o.Items)
+                .FirstOrDefaultAsync(
+                    o =>
+                        o.Id ==
+                        orderId);
 
         if (order == null)
-            throw new Exception("Order not found.");
+            throw new KeyNotFoundException(
+                "Order not found.");
 
         if (order.Status != "Pending")
-            throw new Exception("Only pending orders can be cancelled.");
+        {
+            throw new InvalidOperationException(
+                "Only pending orders can be cancelled.");
+        }
+
+        if (order.Employee == null)
+        {
+            throw new InvalidOperationException(
+                "Order employee could not be found.");
+        }
 
         order.Status = "Cancelled";
-        order.EstimatedDeliveryTime = "Cancelled";
+        order.EstimatedDeliveryTime =
+            GetEstimatedDeliveryTime("Cancelled");
 
-        order.Employee!.Balance += order.TotalAmount;
+        order.Employee.Balance +=
+            order.TotalAmount;
 
-        _context.Transactions.Add(new Transaction
-        {
-            EmployeeId = order.EmployeeId,
-            Amount = order.TotalAmount,
-            Type = "Refund",
-            Description = $"Refund for cancelled order #{order.Id}",
-            CreatedAt = DateTime.UtcNow
-        });
+        _context.Transactions.Add(
+            new Transaction
+            {
+                EmployeeId =
+                    order.EmployeeId,
+
+                Amount =
+                    order.TotalAmount,
+
+                Type =
+                    "Refund",
+
+                Description =
+                    $"Refund for cancelled order #{order.Id}",
+
+                CreatedAt =
+                    DateTime.UtcNow
+            });
 
         await _context.SaveChangesAsync();
 
-        await _hub.Clients.All.SendAsync("ReceiveStatusUpdate", new
-        {
-            id = order.Id,
-            employeeId = order.EmployeeId,
-            employeeName = order.Employee.Name,
-            employeeNumber = order.Employee.EmployeeNumber,
-            totalAmount = order.TotalAmount,
-            status = order.Status,
-            estimatedDeliveryTime = order.EstimatedDeliveryTime,
-            orderDate = order.OrderDate
-        });
+        await BroadcastStatusUpdate(
+            order);
 
         return order;
     }
 
-    public async Task<Order?> AssignDriverAsync(AssignDriverDto dto)
+    /*
+     * =========================================================
+     * ASSIGN DRIVER
+     * =========================================================
+     */
+    public async Task<Order?> AssignDriverAsync(
+        AssignDriverDto dto)
     {
-        var order = await _context.Orders
-            .Include(o => o.Employee)
-            .Include(o => o.Driver)
-            .Include(o => o.Items)
-            .FirstOrDefaultAsync(o => o.Id == dto.OrderId);
+        if (dto == null)
+            throw new ArgumentException(
+                "Invalid driver assignment.");
 
-        if (order == null) throw new Exception("Order not found.");
+        var order =
+            await _context.Orders
+                .Include(o => o.Employee)
+                .Include(o => o.Driver)
+                .Include(o => o.Items)
+                .FirstOrDefaultAsync(
+                    o =>
+                        o.Id ==
+                        dto.OrderId);
 
-        var driver = await _context.Drivers.FindAsync(dto.DriverId);
-        if (driver == null) throw new Exception("Driver not found.");
-        if (!driver.IsAvailable) throw new Exception("Driver is not available.");
+        if (order == null)
+            throw new KeyNotFoundException(
+                "Order not found.");
 
-        order.DriverId = driver.Id;
-        order.Status = "Out For Delivery";
-        order.EstimatedDeliveryTime = "10 minutes";
+        var driver =
+            await _context.Drivers
+                .FirstOrDefaultAsync(
+                    d =>
+                        d.Id ==
+                        dto.DriverId);
+
+        if (driver == null)
+            throw new KeyNotFoundException(
+                "Driver not found.");
+
+        if (!driver.IsAvailable)
+            throw new InvalidOperationException(
+                "Driver is not available.");
+
+        order.DriverId =
+            driver.Id;
+
+        order.Driver =
+            driver;
+
+        order.Status =
+            "Out For Delivery";
+
+        order.EstimatedDeliveryTime =
+            GetEstimatedDeliveryTime(
+                "Out For Delivery");
 
         await _context.SaveChangesAsync();
 
-        await _hub.Clients.All.SendAsync("ReceiveStatusUpdate", new
-        {
-            id = order.Id,
-            employeeId = order.EmployeeId,
-            employeeName = order.Employee?.Name ?? "",
-            employeeNumber = order.Employee?.EmployeeNumber ?? "",
-            driverId = driver.Id,
-            driverName = driver.FullName,
-            totalAmount = order.TotalAmount,
-            status = order.Status,
-            estimatedDeliveryTime = order.EstimatedDeliveryTime,
-            orderDate = order.OrderDate
-        });
+        await BroadcastStatusUpdate(
+            order);
 
         return order;
     }
 
-    public async Task<List<Order>> GetOrdersForEmployeeAsync(string employeeNumber)
+    /*
+     * =========================================================
+     * EMPLOYEE ORDERS
+     * =========================================================
+     */
+    public async Task<List<Order>>
+        GetOrdersForEmployeeAsync(
+            string employeeNumber)
     {
-        var employee = await _context.Employees.FirstOrDefaultAsync(e => e.EmployeeNumber == employeeNumber);
-        if (employee == null) throw new Exception("Employee not found.");
+        if (string.IsNullOrWhiteSpace(
+                employeeNumber))
+        {
+            throw new ArgumentException(
+                "Employee number is required.");
+        }
+
+        var employee =
+            await _context.Employees
+                .FirstOrDefaultAsync(
+                    e =>
+                        e.EmployeeNumber ==
+                        employeeNumber);
+
+        if (employee == null)
+            throw new KeyNotFoundException(
+                "Employee not found.");
 
         return await _context.Orders
-            .Include(o => o.Employee)
-            .Include(o => o.Driver)
-            .Include(o => o.Items)
-            .Where(o => o.EmployeeId == employee.Id)
-            .OrderByDescending(o => o.OrderDate)
-            .ToListAsync();
-    }
-
-    public async Task<(List<Order> Items, int TotalItems)> SearchOrdersAsync(
-        string? search,
-        string? status,
-        DateTime? fromDate,
-        DateTime? toDate,
-        int page,
-        int pageSize)
-    {
-        page = Math.Max(page, 1);
-        pageSize = Math.Clamp(pageSize, 1, 100);
-
-        var query = _context.Orders
             .AsNoTracking()
             .Include(o => o.Employee)
             .Include(o => o.Driver)
             .Include(o => o.Items)
-            .AsQueryable();
+            .Where(
+                o =>
+                    o.EmployeeId ==
+                    employee.Id)
+            .OrderByDescending(
+                o =>
+                    o.OrderDate)
+            .ToListAsync();
+    }
 
-        if (!string.IsNullOrWhiteSpace(search))
+    /*
+     * =========================================================
+     * SEARCH + PAGINATION
+     * =========================================================
+     */
+    public async Task<(
+        List<Order> Items,
+        int TotalItems
+        )> SearchOrdersAsync(
+            string? search,
+            string? status,
+            DateTime? fromDate,
+            DateTime? toDate,
+            int page,
+            int pageSize)
+    {
+        page =
+            Math.Max(
+                page,
+                1);
+
+        pageSize =
+            Math.Clamp(
+                pageSize,
+                1,
+                100);
+
+        var query =
+            _context.Orders
+                .AsNoTracking()
+                .Include(o => o.Employee)
+                .Include(o => o.Driver)
+                .Include(o => o.Items)
+                .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(
+                search))
         {
-            var term = search.Trim();
-            query = query.Where(o =>
-                (o.Employee != null && o.Employee.Name.Contains(term)) ||
-                (o.Employee != null && o.Employee.EmployeeNumber.Contains(term)) ||
-                o.Id.ToString().Contains(term));
+            var term =
+                search.Trim();
+
+            query =
+                query.Where(
+                    o =>
+                        (
+                            o.Employee != null &&
+                            o.Employee.Name.Contains(
+                                term)
+                        )
+                        ||
+                        (
+                            o.Employee != null &&
+                            o.Employee.EmployeeNumber
+                                .Contains(term)
+                        )
+                        ||
+                        o.Id.ToString()
+                            .Contains(term));
         }
 
-        if (!string.IsNullOrWhiteSpace(status))
+        if (!string.IsNullOrWhiteSpace(
+                status))
         {
-            var normalizedStatus = status.Trim();
-            query = query.Where(o => o.Status == normalizedStatus);
+            var normalizedStatus =
+                status.Trim();
+
+            query =
+                query.Where(
+                    o =>
+                        o.Status ==
+                        normalizedStatus);
         }
 
         if (fromDate.HasValue)
         {
-            var from = fromDate.Value.Date;
-            query = query.Where(o => o.OrderDate >= from);
+            var from =
+                fromDate.Value.Date;
+
+            query =
+                query.Where(
+                    o =>
+                        o.OrderDate >=
+                        from);
         }
 
         if (toDate.HasValue)
         {
-            var toExclusive = toDate.Value.Date.AddDays(1);
-            query = query.Where(o => o.OrderDate < toExclusive);
+            var toExclusive =
+                toDate.Value
+                    .Date
+                    .AddDays(1);
+
+            query =
+                query.Where(
+                    o =>
+                        o.OrderDate <
+                        toExclusive);
         }
 
-        var totalItems = await query.CountAsync();
+        var totalItems =
+            await query.CountAsync();
 
-        var items = await query
-            .OrderByDescending(o => o.OrderDate)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
+        var items =
+            await query
+                .OrderByDescending(
+                    o =>
+                        o.OrderDate)
+                .Skip(
+                    (page - 1) *
+                    pageSize)
+                .Take(pageSize)
+                .ToListAsync();
 
-        return (items, totalItems);
+        return (
+            items,
+            totalItems);
     }
 
-    public async Task<List<Order>> GetAllOrdersAsync()
+    /*
+     * =========================================================
+     * ALL ORDERS
+     * =========================================================
+     */
+    public async Task<List<Order>>
+        GetAllOrdersAsync()
     {
         return await _context.Orders
+            .AsNoTracking()
             .Include(o => o.Employee)
             .Include(o => o.Driver)
             .Include(o => o.Items)
-            .OrderByDescending(o => o.OrderDate)
+            .OrderByDescending(
+                o =>
+                    o.OrderDate)
             .ToListAsync();
     }
 
-    public async Task<Order?> UpdateOrderStatusAsync(int orderId, string status)
+    /*
+     * =========================================================
+     * UPDATE STATUS
+     * =========================================================
+     */
+    public async Task<Order?>
+        UpdateOrderStatusAsync(
+            int orderId,
+            string status)
     {
-        var validStatuses = new[]
+        if (string.IsNullOrWhiteSpace(
+                status))
         {
-            "Pending",
-            "Preparing",
-            "Ready For Pickup",
-            "Out For Delivery",
-            "Delivered",
-            "Cancelled"
-        };
+            throw new ArgumentException(
+                "Status is required.");
+        }
 
-        if (!validStatuses.Contains(status))
-            throw new Exception("Invalid status value.");
+        status =
+            NormalizeStatus(status);
 
-        var order = await _context.Orders
-            .Include(o => o.Employee)
-            .Include(o => o.Driver)
-            .Include(o => o.Items)
-            .FirstOrDefaultAsync(o => o.Id == orderId);
+        if (!ValidStatuses.Contains(
+                status))
+        {
+            throw new ArgumentException(
+                "Invalid status value.");
+        }
+
+        var order =
+            await _context.Orders
+                .Include(o => o.Employee)
+                .Include(o => o.Driver)
+                .Include(o => o.Items)
+                .FirstOrDefaultAsync(
+                    o =>
+                        o.Id ==
+                        orderId);
 
         if (order == null)
-            throw new Exception("Order not found.");
+            throw new KeyNotFoundException(
+                "Order not found.");
 
-        if (order.Status == "Cancelled")
-            throw new Exception("Cancelled orders cannot be updated.");
+        if (order.Status ==
+            "Cancelled")
+        {
+            throw new InvalidOperationException(
+                "Cancelled orders cannot be updated.");
+        }
 
-        order.Status = status;
-        order.EstimatedDeliveryTime = GetEstimatedDeliveryTime(status);
+        /*
+         * Prevent moving a delivered order back
+         * into an earlier state.
+         */
+        if (order.Status ==
+                "Delivered" &&
+            status != "Delivered")
+        {
+            throw new InvalidOperationException(
+                "Delivered orders cannot be moved to an earlier status.");
+        }
+
+        order.Status =
+            status;
+
+        order.EstimatedDeliveryTime =
+            GetEstimatedDeliveryTime(
+                status);
 
         await _context.SaveChangesAsync();
 
-        if (status == "Delivered")
-            await SendOrderDeliveredAsync(order);
+        await BroadcastStatusUpdate(
+            order);
 
-        await _hub.Clients.All.SendAsync("ReceiveStatusUpdate", new
+        if (status ==
+            "Delivered")
         {
-            id = order.Id,
-            employeeId = order.EmployeeId,
-            employeeName = order.Employee?.Name ?? "",
-            employeeNumber = order.Employee?.EmployeeNumber ?? "",
-            driverId = order.DriverId,
-            driverName = order.Driver?.FullName ?? "Not Assigned",
-            totalAmount = order.TotalAmount,
-            status = order.Status,
-            estimatedDeliveryTime = order.EstimatedDeliveryTime,
-            orderDate = order.OrderDate
-        });
+            await SendOrderDeliveredAsync(
+                order);
+        }
 
         return order;
     }
 
-    private void AddOrderTransaction(int employeeId, decimal amount, string description)
+    /*
+     * =========================================================
+     * TRANSACTION
+     * =========================================================
+     */
+    private void AddOrderTransaction(
+        int employeeId,
+        decimal amount,
+        string description)
     {
-        _context.Transactions.Add(new Transaction
-        {
-            EmployeeId = employeeId,
-            Amount = amount,
-            Type = "Order",
-            Description = description,
-            CreatedAt = DateTime.UtcNow
-        });
-    }
-
-    private async Task SendOrderUpdate(Order order, Employee employee)
-    {
-        await _hub.Clients.All.SendAsync("ReceiveOrderUpdate", new
-        {
-            id = order.Id,
-            employeeId = employee.Id,
-            employeeName = employee.Name,
-            employeeNumber = employee.EmployeeNumber,
-            driverId = order.DriverId,
-            driverName = order.Driver?.FullName ?? "Not Assigned",
-            totalAmount = order.TotalAmount,
-            status = order.Status,
-            estimatedDeliveryTime = order.EstimatedDeliveryTime,
-            orderDate = order.OrderDate,
-            items = order.Items.Select(i => new
+        _context.Transactions.Add(
+            new Transaction
             {
-                id = i.Id,
-                itemName = i.ItemName,
-                quantity = i.Quantity,
-                unitPriceAtTimeOfOrder = i.UnitPriceAtTimeOfOrder
-            }).ToList()
-        });
+                EmployeeId =
+                    employeeId,
+
+                Amount =
+                    amount,
+
+                Type =
+                    "Order",
+
+                Description =
+                    description,
+
+                CreatedAt =
+                    DateTime.UtcNow
+            });
     }
 
-    private static string GetEstimatedDeliveryTime(string status)
+    /*
+     * =========================================================
+     * SIGNALR - ORDER CREATED
+     * =========================================================
+     */
+    private async Task SendOrderUpdate(
+        Order order,
+        Employee employee)
+    {
+        await _hub.Clients.All.SendAsync(
+            "ReceiveOrderUpdate",
+            new
+            {
+                id =
+                    order.Id,
+
+                employeeId =
+                    employee.Id,
+
+                employeeName =
+                    employee.Name,
+
+                employeeNumber =
+                    employee.EmployeeNumber,
+
+                driverId =
+                    order.DriverId,
+
+                driverName =
+                    order.Driver?.FullName
+                    ?? "Not Assigned",
+
+                totalAmount =
+                    order.TotalAmount,
+
+                status =
+                    order.Status,
+
+                estimatedDeliveryTime =
+                    order.EstimatedDeliveryTime,
+
+                orderDate =
+                    order.OrderDate,
+
+                items =
+                    order.Items
+                        .Select(
+                            i =>
+                                new
+                                {
+                                    id =
+                                        i.Id,
+
+                                    itemName =
+                                        i.ItemName,
+
+                                    quantity =
+                                        i.Quantity,
+
+                                    unitPriceAtTimeOfOrder =
+                                        i.UnitPriceAtTimeOfOrder
+                                })
+                        .ToList()
+            });
+    }
+
+    /*
+     * =========================================================
+     * SIGNALR - STATUS UPDATE
+     * =========================================================
+     */
+    private async Task BroadcastStatusUpdate(
+        Order order)
+    {
+        await _hub.Clients.All.SendAsync(
+            "ReceiveStatusUpdate",
+            new
+            {
+                id =
+                    order.Id,
+
+                employeeId =
+                    order.EmployeeId,
+
+                employeeName =
+                    order.Employee?.Name
+                    ?? "",
+
+                employeeNumber =
+                    order.Employee?.EmployeeNumber
+                    ?? "",
+
+                driverId =
+                    order.DriverId,
+
+                driverName =
+                    order.Driver?.FullName
+                    ?? "Not Assigned",
+
+                totalAmount =
+                    order.TotalAmount,
+
+                status =
+                    order.Status,
+
+                estimatedDeliveryTime =
+                    order.EstimatedDeliveryTime
+                    ?? GetEstimatedDeliveryTime(
+                        order.Status),
+
+                orderDate =
+                    order.OrderDate,
+
+                items =
+                    order.Items
+                        .Select(
+                            i =>
+                                new
+                                {
+                                    id =
+                                        i.Id,
+
+                                    itemName =
+                                        i.ItemName,
+
+                                    quantity =
+                                        i.Quantity,
+
+                                    unitPriceAtTimeOfOrder =
+                                        i.UnitPriceAtTimeOfOrder
+                                })
+                        .ToList()
+            });
+    }
+
+    /*
+     * =========================================================
+     * ESTIMATED DELIVERY
+     * =========================================================
+     */
+    private static string
+        GetEstimatedDeliveryTime(
+            string status)
     {
         return status switch
         {
-            "Pending" => "45 minutes",
-            "Preparing" => "30 minutes",
-            "Ready For Pickup" => "15 minutes",
-            "Out For Delivery" => "10 minutes",
-            "Delivered" => "Delivered",
-            "Cancelled" => "Cancelled",
-            _ => "45 minutes"
+            "Pending" =>
+                "45 minutes",
+
+            "Preparing" =>
+                "30 minutes",
+
+            "Ready For Pickup" =>
+                "15 minutes",
+
+            "Out For Delivery" =>
+                "10 minutes",
+
+            "Delivered" =>
+                "Delivered",
+
+            "Cancelled" =>
+                "Cancelled",
+
+            _ =>
+                "45 minutes"
         };
     }
 
-    private async Task SendOrderConfirmationAsync(Order order)
+    /*
+     * =========================================================
+     * STATUS NORMALIZATION
+     * =========================================================
+     */
+    private static string
+        NormalizeStatus(
+            string status)
+    {
+        var value =
+            status.Trim();
+
+        return value switch
+        {
+            "Ready for Pickup" =>
+                "Ready For Pickup",
+
+            "Ready For pickup" =>
+                "Ready For Pickup",
+
+            "Out for Delivery" =>
+                "Out For Delivery",
+
+            "out for delivery" =>
+                "Out For Delivery",
+
+            "preparing" =>
+                "Preparing",
+
+            "pending" =>
+                "Pending",
+
+            "delivered" =>
+                "Delivered",
+
+            "cancelled" =>
+                "Cancelled",
+
+            _ =>
+                value
+        };
+    }
+
+    /*
+     * =========================================================
+     * EMAIL CONFIRMATION
+     * =========================================================
+     *
+     * Your current IEmailService interface does not expose
+     * employee email information, so the existing service
+     * contract is preserved here.
+     *
+     * Replace the placeholder recipient with your real
+     * employee notification lookup when your Employee model
+     * contains an Email property.
+     * =========================================================
+     */
+    private async Task
+        SendOrderConfirmationAsync(
+            Order order)
     {
         await _emailService.SendEmailAsync(
             "employee@example.com",
             "Order Confirmation",
-            $"Your order #{order.Id} has been confirmed. Total: R{order.TotalAmount}"
-        );
-
-        await _smsService.SendSmsAsync(
-            "0000000000",
-            $"Order #{order.Id} confirmed. Total: R{order.TotalAmount}"
-        );
+            $"Your order #{order.Id} has been confirmed. " +
+            $"Total: R{order.TotalAmount:N2}");
     }
 
-    private async Task SendOrderDeliveredAsync(Order order)
+    /*
+     * =========================================================
+     * DELIVERY NOTIFICATION
+     * =========================================================
+     */
+    private async Task
+        SendOrderDeliveredAsync(
+            Order order)
     {
         await _emailService.SendEmailAsync(
             "employee@example.com",
             "Order Delivered",
-            $"Your order #{order.Id} has been delivered."
-        );
+            $"Your order #{order.Id} has been delivered.");
 
         await _smsService.SendSmsAsync(
             "0000000000",
-            $"Order #{order.Id} has been delivered."
-        );
+            $"Order #{order.Id} has been delivered.");
     }
 }

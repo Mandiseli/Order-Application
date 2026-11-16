@@ -1,0 +1,109 @@
+2026-10-12 09:29:08.755 +02:00 [INF] Database connection configured: Server=localhost;Port=3306;Database=Cafeteria;User=root;Password=***;
+2026-10-12 09:29:16.184 +02:00 [INF] Checking database...
+2026-10-12 09:29:48.693 +02:00 [INF] Executed DbCommand (5,466ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='Cafeteria' AND TABLE_NAME='__EFMigrationsHistory';
+2026-10-12 09:29:51.772 +02:00 [INF] Executed DbCommand (3ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='Cafeteria' AND TABLE_NAME='__EFMigrationsHistory';
+2026-10-12 09:29:56.887 +02:00 [INF] Executed DbCommand (4,825ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT `MigrationId`, `ProductVersion`
+FROM `__EFMigrationsHistory`
+ORDER BY `MigrationId`;
+2026-10-12 09:29:56.929 +02:00 [INF] No migrations were applied. The database is already up to date.
+2026-10-12 09:29:56.933 +02:00 [INF] Database migrations completed successfully.
+2026-10-12 09:30:00.246 +02:00 [INF] Executed DbCommand (379ms) [Parameters=[@__ToLower_0='?' (Size = 255)], CommandType='"Text"', CommandTimeout='30']
+SELECT `e`.`Id`, `e`.`Balance`, `e`.`EmployeeNumber`, `e`.`LastDepositMonth`, `e`.`Name`
+FROM `Employees` AS `e`
+WHERE LOWER(`e`.`EmployeeNumber`) = @__ToLower_0
+LIMIT 1
+2026-10-12 09:30:01.753 +02:00 [INF] Executed DbCommand (3ms) [Parameters=[@__ToLower_0='?' (Size = 255)], CommandType='"Text"', CommandTimeout='30']
+SELECT `e`.`Id`, `e`.`Balance`, `e`.`EmployeeNumber`, `e`.`LastDepositMonth`, `e`.`Name`
+FROM `Employees` AS `e`
+WHERE LOWER(`e`.`EmployeeNumber`) = @__ToLower_0
+LIMIT 1
+2026-10-12 09:30:01.778 +02:00 [INF] Executed DbCommand (2ms) [Parameters=[@__ToLower_0='?' (Size = 255)], CommandType='"Text"', CommandTimeout='30']
+SELECT `e`.`Id`, `e`.`Balance`, `e`.`EmployeeNumber`, `e`.`LastDepositMonth`, `e`.`Name`
+FROM `Employees` AS `e`
+WHERE LOWER(`e`.`EmployeeNumber`) = @__ToLower_0
+LIMIT 1
+2026-10-12 09:30:01.788 +02:00 [INF] Executed DbCommand (2ms) [Parameters=[@__ToLower_0='?' (Size = 255)], CommandType='"Text"', CommandTimeout='30']
+SELECT `e`.`Id`, `e`.`Balance`, `e`.`EmployeeNumber`, `e`.`LastDepositMonth`, `e`.`Name`
+FROM `Employees` AS `e`
+WHERE LOWER(`e`.`EmployeeNumber`) = @__ToLower_0
+LIMIT 1
+2026-10-12 09:30:02.775 +02:00 [INF] Executed DbCommand (478ms) [Parameters=[@__ToLower_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT `u`.`Id`, `u`.`EmployeeNumber`, `u`.`PasswordHash`, `u`.`RefreshToken`, `u`.`RefreshTokenExpiresAt`, `u`.`Role`, `u`.`Username`
+FROM `Users` AS `u`
+WHERE LOWER(`u`.`Username`) = @__ToLower_0
+LIMIT 1
+2026-10-12 09:30:02.908 +02:00 [INF] Executed DbCommand (1ms) [Parameters=[@__ToLower_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT `u`.`Id`, `u`.`EmployeeNumber`, `u`.`PasswordHash`, `u`.`RefreshToken`, `u`.`RefreshTokenExpiresAt`, `u`.`Role`, `u`.`Username`
+FROM `Users` AS `u`
+WHERE LOWER(`u`.`Username`) = @__ToLower_0
+LIMIT 1
+2026-10-12 09:30:02.919 +02:00 [INF] Executed DbCommand (2ms) [Parameters=[@__ToLower_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT `u`.`Id`, `u`.`EmployeeNumber`, `u`.`PasswordHash`, `u`.`RefreshToken`, `u`.`RefreshTokenExpiresAt`, `u`.`Role`, `u`.`Username`
+FROM `Users` AS `u`
+WHERE LOWER(`u`.`Username`) = @__ToLower_0
+LIMIT 1
+2026-10-12 09:30:02.927 +02:00 [INF] Executed DbCommand (2ms) [Parameters=[@__ToLower_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT `u`.`Id`, `u`.`EmployeeNumber`, `u`.`PasswordHash`, `u`.`RefreshToken`, `u`.`RefreshTokenExpiresAt`, `u`.`Role`, `u`.`Username`
+FROM `Users` AS `u`
+WHERE LOWER(`u`.`Username`) = @__ToLower_0
+LIMIT 1
+2026-10-12 09:30:02.935 +02:00 [INF] Executed DbCommand (2ms) [Parameters=[@__ToLower_0='?' (Size = 4000)], CommandType='"Text"', CommandTimeout='30']
+SELECT `u`.`Id`, `u`.`EmployeeNumber`, `u`.`PasswordHash`, `u`.`RefreshToken`, `u`.`RefreshTokenExpiresAt`, `u`.`Role`, `u`.`Username`
+FROM `Users` AS `u`
+WHERE LOWER(`u`.`Username`) = @__ToLower_0
+LIMIT 1
+2026-10-12 09:30:02.954 +02:00 [INF] Database seed completed successfully.
+2026-10-12 09:30:02.959 +02:00 [INF] Order Application API starting...
+2026-10-12 09:30:02.971 +02:00 [INF] SignalR hub available at /orderHub
+2026-10-12 09:30:03.327 +02:00 [INF] User profile is available. Using 'C:\Users\lenovo\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-10-12 09:30:04.386 +02:00 [INF] Now listening on: http://localhost:5174
+2026-10-12 09:30:05.799 +02:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-10-12 09:30:08.830 +02:00 [INF] Hosting environment: Development
+2026-10-12 09:30:09.578 +02:00 [INF] Content root path: C:\Users\lenovo\source\repos\Order Application\Backend\Order_App
+2026-10-12 09:30:26.723 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/api/auth/login - null null
+2026-10-12 09:30:35.350 +02:00 [INF] CORS policy execution successful.
+2026-10-12 09:30:37.072 +02:00 [INF] HTTP OPTIONS /api/auth/login responded 204 in 4868.8637 ms
+2026-10-12 09:30:42.591 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/api/auth/login - 204 null null 15905.6819ms
+2026-10-12 09:30:56.233 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/api/auth/login - null null
+2026-10-12 09:31:01.479 +02:00 [INF] CORS policy execution successful.
+2026-10-12 09:31:02.736 +02:00 [INF] HTTP OPTIONS /api/auth/login responded 204 in 1531.0220 ms
+2026-10-12 09:31:03.452 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/api/auth/login - 204 null null 7234.5388ms
+2026-10-12 09:31:14.131 +02:00 [INF] Request starting HTTP/1.1 POST http://localhost:5174/api/auth/login - application/json 45
+2026-10-12 09:31:30.016 +02:00 [INF] CORS policy execution successful.
+2026-10-12 09:31:38.028 +02:00 [INF] Executing endpoint 'Order_App.Controllers.AuthController.Login (Order_App)'
+2026-10-12 09:31:43.811 +02:00 [INF] Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(Order_App.Dtos.LoginDto) on controller Order_App.Controllers.AuthController (Order_App).
+2026-10-12 09:31:53.254 +02:00 [INF] Executed action Order_App.Controllers.AuthController.Login (Order_App) in 2857.1158ms
+2026-10-12 09:31:55.132 +02:00 [INF] Request starting HTTP/1.1 OPTIONS http://localhost:5174/api/auth/login - null null
+2026-10-12 09:31:58.353 +02:00 [INF] Executed endpoint 'Order_App.Controllers.AuthController.Login (Order_App)'
+2026-10-12 09:32:07.482 +02:00 [INF] CORS policy execution successful.
+2026-10-12 09:32:11.202 +02:00 [ERR] HTTP POST /api/auth/login responded 500 in 41253.8601 ms
+Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException: Unexpected end of request content.
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1ContentLengthMessageBody.ReadAsyncInternal(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpRequestStream.ReadAsyncInternal(Memory`1 destination, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Text.Json.Serialization.StreamReadBufferState.ReadAsync(Stream stream, CancellationToken cancellationToken, Boolean fillBuffer)
+   at System.Text.Json.Serialization.Metadata.JsonTypeInfo`1.DeserializeAsync[TReadBufferState,TStream](TStream utf8Json, TReadBufferState bufferState, CancellationToken cancellationToken)
+   at System.Text.Json.Serialization.Metadata.JsonTypeInfo`1.DeserializeAsObjectAsync(Stream utf8Json, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Mvc.Formatters.SystemTextJsonInputFormatter.ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
+   at Microsoft.AspNetCore.Mvc.Formatters.SystemTextJsonInputFormatter.ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
+   at Microsoft.AspNetCore.Mvc.ModelBinding.Binders.BodyModelBinder.BindModelAsync(ModelBindingContext bindingContext)
+   at Microsoft.AspNetCore.Mvc.ModelBinding.ParameterBinder.BindModelAsync(ActionContext actionContext, IModelBinder modelBinder, IValueProvider valueProvider, ParameterDescriptor parameter, ModelMetadata metadata, Object value, Object container)
+   at Microsoft.AspNetCore.Mvc.Controllers.ControllerBinderDelegateProvider.<>c__DisplayClass0_0.<<CreateBinderDelegate>g__Bind|0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Serilog.AspNetCore.RequestLoggingMiddleware.Invoke(HttpContext httpContext)
+2026-10-12 09:32:14.598 +02:00 [INF] HTTP OPTIONS /api/auth/login responded 204 in 7116.4807 ms
+2026-10-12 09:32:36.475 +02:00 [INF] Request finished HTTP/1.1 POST http://localhost:5174/api/auth/login - 499 null null 82342.9685ms
+2026-10-12 09:32:39.271 +02:00 [INF] Request finished HTTP/1.1 OPTIONS http://localhost:5174/api/auth/login - 204 null null 44138.1842ms

@@ -1,13 +1,13 @@
-using Microsoft.EntityFrameworkCore;
-using Order_App.Data;
-using Order_App.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
-using Order_App.Hubs;
-using Serilog;
 using DotNetEnv;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Order_App.Data;
+using Order_App.Hubs;
+using Order_App.Services;
+using Serilog;
 
 //
 // Load environment variables from .env
@@ -20,19 +20,25 @@ Env.Load();
 var builder = WebApplication.CreateBuilder(args);
 
 //
+// ------------------------------------------------------------
 // Serilog
+// ------------------------------------------------------------
 //
 Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
     .WriteTo.Console()
     .WriteTo.File(
         "Logs/order-app-.log",
-        rollingInterval: RollingInterval.Day)
+        rollingInterval: RollingInterval.Day,
+        retainedFileCountLimit: 30)
     .CreateLogger();
 
 builder.Host.UseSerilog();
 
 //
-// Controllers + JSON configuration
+// ------------------------------------------------------------
+// Controllers + JSON
+// ------------------------------------------------------------
 //
 builder.Services
     .AddControllers()
@@ -45,48 +51,51 @@ builder.Services
     });
 
 //
+// ------------------------------------------------------------
 // Swagger
+// ------------------------------------------------------------
 //
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 //
+// ------------------------------------------------------------
 // SignalR
+// ------------------------------------------------------------
 //
 builder.Services.AddSignalR();
 
 //
-// Database connection
+// ------------------------------------------------------------
+// Database
+// ------------------------------------------------------------
 //
-// First try DB_CONNECTION from .env.
-// If it does not exist, use DefaultConnection from appsettings.json.
-//
-var cs =
+var connectionString =
     Environment.GetEnvironmentVariable("DB_CONNECTION")
     ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
-if (string.IsNullOrWhiteSpace(cs))
+if (string.IsNullOrWhiteSpace(connectionString))
 {
-    throw new Exception(
+    throw new InvalidOperationException(
         "Database connection string is missing. " +
-        "Please configure DB_CONNECTION in .env " +
-        "or DefaultConnection in appsettings.json.");
+        "Configure DB_CONNECTION in .env or " +
+        "DefaultConnection in appsettings.json.");
 }
 
 //
-// Do NOT print the actual password.
+// Never print the real database password.
 //
-var safeConnectionString = cs;
+var safeConnectionString = connectionString;
 
-if (safeConnectionString.Contains("Password=", StringComparison.OrdinalIgnoreCase))
+var passwordIndex = safeConnectionString.IndexOf(
+    "Password=",
+    StringComparison.OrdinalIgnoreCase);
+
+if (passwordIndex >= 0)
 {
-    var passwordStart = safeConnectionString.IndexOf(
-        "Password=",
-        StringComparison.OrdinalIgnoreCase);
-
     var passwordEnd = safeConnectionString.IndexOf(
         ';',
-        passwordStart);
+        passwordIndex);
 
     if (passwordEnd == -1)
     {
@@ -94,30 +103,34 @@ if (safeConnectionString.Contains("Password=", StringComparison.OrdinalIgnoreCas
     }
 
     safeConnectionString =
-        safeConnectionString.Substring(0, passwordStart)
+        safeConnectionString.Substring(
+            0,
+            passwordIndex)
         + "Password=***"
         + safeConnectionString.Substring(passwordEnd);
 }
 
-Console.WriteLine(
-    $"Database connection configured: {safeConnectionString}");
+Log.Information(
+    "Database connection configured: {ConnectionString}",
+    safeConnectionString);
 
 //
+// ------------------------------------------------------------
 // Entity Framework Core + MySQL
-//
-// Explicitly specify MySQL 8 instead of AutoDetect.
-// This prevents EF Core from trying to connect during
-// server-version detection.
+// ------------------------------------------------------------
 //
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseMySql(
-        cs,
-        new MySqlServerVersion(new Version(8, 0, 0)));
+        connectionString,
+        new MySqlServerVersion(
+            new Version(8, 0, 0)));
 });
 
 //
-// Dependency Injection
+// ------------------------------------------------------------
+// Application Services
+// ------------------------------------------------------------
 //
 builder.Services.AddScoped<IDepositService, DepositService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
@@ -129,10 +142,9 @@ builder.Services.AddScoped<ISmsService, SmsService>();
 builder.Services.AddHttpClient<IGeoapifyService, GeoapifyService>();
 
 //
-// JWT configuration
-//
-// First try JWT_KEY from .env.
-// Otherwise use Jwt:Key from appsettings.json.
+// ------------------------------------------------------------
+// JWT
+// ------------------------------------------------------------
 //
 var jwtKey =
     Environment.GetEnvironmentVariable("JWT_KEY")
@@ -140,17 +152,29 @@ var jwtKey =
 
 if (string.IsNullOrWhiteSpace(jwtKey))
 {
-    throw new Exception(
+    throw new InvalidOperationException(
         "JWT key is missing. " +
-        "Please configure JWT_KEY in .env " +
-        "or Jwt:Key in appsettings.json.");
+        "Configure JWT_KEY in .env or Jwt:Key in appsettings.json.");
 }
 
+if (Encoding.UTF8.GetByteCount(jwtKey) < 32)
+{
+    throw new InvalidOperationException(
+        "JWT key must be at least 32 bytes long.");
+}
+
+var jwtSigningKey =
+    new SymmetricSecurityKey(
+        Encoding.UTF8.GetBytes(jwtKey));
+
 //
-// JWT Authentication
+// ------------------------------------------------------------
+// Authentication
+// ------------------------------------------------------------
 //
 builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddAuthentication(
+        JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters =
@@ -158,36 +182,83 @@ builder.Services
             {
                 ValidateIssuer = false,
                 ValidateAudience = false,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
 
-                IssuerSigningKey =
-                    new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(jwtKey))
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.FromMinutes(1),
+
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = jwtSigningKey,
+
+                RoleClaimType =
+                    System.Security.Claims.ClaimTypes.Role,
+
+                NameClaimType =
+                    System.Security.Claims.ClaimTypes.Name
             };
+
+        //
+        // ----------------------------------------------------
+        // IMPORTANT:
+        // SignalR WebSockets cannot normally send the JWT
+        // through the Authorization header during the initial
+        // WebSocket handshake.
+        //
+        // SignalR therefore sends the token as:
+        //
+        // /orderHub?access_token=...
+        //
+        // This code extracts it.
+        // ----------------------------------------------------
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken =
+                    context.Request.Query["access_token"];
+
+                var path =
+                    context.HttpContext.Request.Path;
+
+                if (!string.IsNullOrEmpty(accessToken)
+                    && path.StartsWithSegments("/orderHub"))
+                {
+                    context.Token = accessToken;
+                }
+
+                return Task.CompletedTask;
+            },
+
+            OnAuthenticationFailed = context =>
+            {
+                Log.Warning(
+                    context.Exception,
+                    "JWT authentication failed.");
+
+                return Task.CompletedTask;
+            }
+        };
     });
 
 //
-// CORS
+// ------------------------------------------------------------
+// Authorization
+// ------------------------------------------------------------
 //
-// Allows the React/Vite frontend to communicate with
-// the ASP.NET Core backend.
+builder.Services.AddAuthorization();
+
+//
+// ------------------------------------------------------------
+// CORS
+// ------------------------------------------------------------
 //
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("client", policy =>
     {
         policy
-            .SetIsOriginAllowed(origin =>
-            {
-                return origin.StartsWith(
-                    "http://localhost:",
-                    StringComparison.OrdinalIgnoreCase)
-                    ||
-                    origin.StartsWith(
-                        "https://localhost:",
-                        StringComparison.OrdinalIgnoreCase);
-            })
+            .WithOrigins(
+                "http://localhost:5173",
+                "https://localhost:5173")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -195,20 +266,23 @@ builder.Services.AddCors(options =>
 });
 
 //
+// ------------------------------------------------------------
 // Build application
+// ------------------------------------------------------------
 //
 var app = builder.Build();
 
 //
-// Serilog HTTP request logging
+// ------------------------------------------------------------
+// Serilog HTTP logging
+// ------------------------------------------------------------
 //
 app.UseSerilogRequestLogging();
 
 //
+// ------------------------------------------------------------
 // Swagger
-//
-// Swagger is intentionally enabled regardless of
-// Development/Production environment.
+// ------------------------------------------------------------
 //
 app.UseSwagger();
 
@@ -222,48 +296,82 @@ app.UseSwaggerUI(options =>
 });
 
 //
+// ------------------------------------------------------------
 // Routing
+// ------------------------------------------------------------
 //
 app.UseRouting();
 
 //
+// ------------------------------------------------------------
 // CORS
+// ------------------------------------------------------------
 //
 app.UseCors("client");
 
 //
+// ------------------------------------------------------------
 // Authentication
+// ------------------------------------------------------------
 //
 app.UseAuthentication();
 
 //
+// ------------------------------------------------------------
 // Authorization
+// ------------------------------------------------------------
 //
 app.UseAuthorization();
 
 //
+// ------------------------------------------------------------
 // Controllers
+// ------------------------------------------------------------
 //
 app.MapControllers();
 
 //
-// SignalR
+// ------------------------------------------------------------
+// SignalR Hub
+// ------------------------------------------------------------
 //
 app.MapHub<OrderHub>("/orderHub");
 
 //
+// ------------------------------------------------------------
 // Root endpoint
+// ------------------------------------------------------------
 //
 app.MapGet("/", () =>
-    Results.Ok(new
+{
+    return Results.Ok(new
     {
-        message = "Order API is running...",
+        message = "Order API is running.",
         swagger = "/swagger",
-        status = "OK"
-    }));
+        signalR = "/orderHub",
+        status = "OK",
+        timestamp = DateTime.UtcNow
+    });
+});
 
 //
-// Database migration and seed
+// ------------------------------------------------------------
+// Health endpoint
+// ------------------------------------------------------------
+//
+app.MapGet("/health", () =>
+{
+    return Results.Ok(new
+    {
+        status = "Healthy",
+        timestamp = DateTime.UtcNow
+    });
+});
+
+//
+// ------------------------------------------------------------
+// Database migration + seed
+// ------------------------------------------------------------
 //
 using (var scope = app.Services.CreateScope())
 {
@@ -273,23 +381,23 @@ using (var scope = app.Services.CreateScope())
             scope.ServiceProvider
                 .GetRequiredService<ApplicationDbContext>();
 
-        Console.WriteLine("Checking database...");
+        Log.Information("Checking database...");
 
         db.Database.Migrate();
 
-        Console.WriteLine(
+        Log.Information(
             "Database migrations completed successfully.");
 
         SeedData.EnsureSeeded(db);
 
-        Console.WriteLine(
+        Log.Information(
             "Database seed completed successfully.");
     }
     catch (Exception ex)
     {
-        Log.Error(
+        Log.Fatal(
             ex,
-            "An error occurred while initializing the database.");
+            "Database initialization failed.");
 
         Console.WriteLine(
             "DATABASE INITIALIZATION ERROR:");
@@ -306,19 +414,25 @@ using (var scope = app.Services.CreateScope())
         }
 
         //
-        // Stop the application because the API depends
-        // on the database.
+        // The API depends on the database.
+        // Stop startup if database initialization fails.
         //
         throw;
     }
 }
 
 //
+// ------------------------------------------------------------
 // Start application
+// ------------------------------------------------------------
 //
 try
 {
-    Log.Information("Order Application API starting...");
+    Log.Information(
+        "Order Application API starting...");
+
+    Log.Information(
+        "SignalR hub available at /orderHub");
 
     app.Run();
 }
