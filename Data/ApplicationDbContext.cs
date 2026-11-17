@@ -1,76 +1,67 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Order_App.Models;
-using System.Collections.Generic;
-using System.Reflection.Emit;
 
-namespace Order_App.Data
+namespace Order_App.Data;
+
+public class ApplicationDbContext : DbContext
 {
-    public class ApplicationDbContext : DbContext
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+
+    public DbSet<Employee> Employees => Set<Employee>();
+    public DbSet<Restaurant> Restaurants => Set<Restaurant>();
+    public DbSet<MenuItem> MenuItems => Set<MenuItem>();
+    public DbSet<Order> Orders => Set<Order>();
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+    public DbSet<Deposit> Deposits => Set<Deposit>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Transaction> Transactions => Set<Transaction>();
+    public DbSet<RestaurantRating> RestaurantRatings => Set<RestaurantRating>();
+    public DbSet<FavoriteRestaurant> FavoriteRestaurants => Set<FavoriteRestaurant>();
+    public DbSet<Driver> Drivers => Set<Driver>();
+    public DbSet<PendingDeposit> PendingDeposits => Set<PendingDeposit>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options) { }
+        base.OnModelCreating(modelBuilder);
 
-        public DbSet<Employee> Employees => Set<Employee>();
-        public DbSet<Restaurant> Restaurants => Set<Restaurant>();
-        public DbSet<MenuItem> MenuItems => Set<MenuItem>();
-        public DbSet<Order> Orders => Set<Order>();
-        public DbSet<OrderItem> OrderItems => Set<OrderItem>();
-        public DbSet<Deposit> Deposits => Set<Deposit>();
-        public DbSet<User> Users => Set<User>();
-        public DbSet<Transaction> Transactions => Set<Transaction>();
-        public DbSet<RestaurantRating> RestaurantRatings => Set<RestaurantRating>();
-        public DbSet<FavoriteRestaurant> FavoriteRestaurants => Set<FavoriteRestaurant>();
-        public DbSet<Driver> Drivers => Set<Driver>();
-        public DbSet<PendingDeposit> PendingDeposits => Set<PendingDeposit>();
+        modelBuilder.Entity<Employee>().HasIndex(e => e.EmployeeNumber).IsUnique();
+        modelBuilder.Entity<Order>().HasIndex(o => new { o.EmployeeId, o.OrderDate });
+        modelBuilder.Entity<Order>().HasIndex(o => new { o.Status, o.OrderDate });
+        modelBuilder.Entity<Transaction>().HasIndex(t => new { t.EmployeeId, t.CreatedAt });
+        modelBuilder.Entity<FavoriteRestaurant>().HasIndex(f => new { f.EmployeeId, f.CreatedAt });
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<Restaurant>()
+            .HasMany(r => r.MenuItems).WithOne(mi => mi.Restaurant!)
+            .HasForeignKey(mi => mi.RestaurantId).OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<Employee>()
-                .HasIndex(e => e.EmployeeNumber)
-                .IsUnique();
+        modelBuilder.Entity<Order>()
+            .HasOne(o => o.Employee).WithMany(e => e.Orders)
+            .HasForeignKey(o => o.EmployeeId);
 
-            modelBuilder.Entity<Restaurant>()
-                .HasMany(r => r.MenuItems)
-                .WithOne(mi => mi.Restaurant!)
-                .HasForeignKey(mi => mi.RestaurantId)
-                .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<OrderItem>()
+            .HasOne(oi => oi.MenuItem).WithMany()
+            .HasForeignKey(oi => oi.MenuItemId).IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
 
-            modelBuilder.Entity<Order>()
-                .HasOne(o => o.Employee)
-                .WithMany(e => e.Orders)
-                .HasForeignKey(o => o.EmployeeId);
+        modelBuilder.Entity<Deposit>()
+            .HasOne(d => d.Employee).WithMany(e => e.Deposits)
+            .HasForeignKey(d => d.EmployeeId);
 
-            modelBuilder.Entity<OrderItem>()
-                .HasOne(oi => oi.MenuItem)
-                .WithMany()
-                .HasForeignKey(oi => oi.MenuItemId)
-                .IsRequired(false)
-                .OnDelete(DeleteBehavior.SetNull);
+        modelBuilder.Entity<Transaction>()
+            .HasOne(t => t.Employee).WithMany()
+            .HasForeignKey(t => t.EmployeeId);
 
-            modelBuilder.Entity<Deposit>()
-                .HasOne(d => d.Employee)
-                .WithMany(e => e.Deposits)
-                .HasForeignKey(d => d.EmployeeId);
+        modelBuilder.Entity<RestaurantRating>()
+            .HasOne(r => r.Employee).WithMany()
+            .HasForeignKey(r => r.EmployeeId);
 
-            modelBuilder.Entity<RestaurantRating>()
-                .HasOne(r => r.Employee)
-                .WithMany()
-                .HasForeignKey(r => r.EmployeeId);
+        modelBuilder.Entity<FavoriteRestaurant>()
+            .HasOne(f => f.Employee).WithMany()
+            .HasForeignKey(f => f.EmployeeId);
 
-            modelBuilder.Entity<FavoriteRestaurant>()
-                .HasOne(f => f.Employee)
-                .WithMany()
-                .HasForeignKey(f => f.EmployeeId);
-
-            modelBuilder.Entity<Driver>()
-                .HasMany(d => d.Orders)
-                .WithOne(o => o.Driver)
-                .HasForeignKey(o => o.DriverId)
-                .IsRequired(false)
-                .OnDelete(DeleteBehavior.SetNull);
-
-        }
+        modelBuilder.Entity<Driver>()
+            .HasMany(d => d.Orders).WithOne(o => o.Driver)
+            .HasForeignKey(o => o.DriverId).IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

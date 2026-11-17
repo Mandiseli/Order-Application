@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Order_App.Data;
 using Order_App.Models;
@@ -6,6 +7,7 @@ using Order_App.Models;
 namespace Order_App.Controllers;
 
 [ApiController]
+[Authorize(Roles = "Admin,Manager")]
 [Route("api/[controller]")]
 public class EmployeesController : ControllerBase
 {
@@ -50,6 +52,7 @@ public class EmployeesController : ControllerBase
     //return CreatedAtAction(nameof(GetEmployee), new { id = employee.Id }, employee);
     //}
 
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<Employee>> PostEmployee(
     Employee employee)
@@ -63,6 +66,13 @@ public class EmployeesController : ControllerBase
             return Conflict(
                 "Employee number already exists");
         }
+
+        employee.Name = employee.Name.Trim();
+        employee.EmployeeNumber = employee.EmployeeNumber.Trim();
+        employee.Email = string.IsNullOrWhiteSpace(employee.Email) ? null : employee.Email.Trim();
+        employee.PhoneNumber = string.IsNullOrWhiteSpace(employee.PhoneNumber) ? null : employee.PhoneNumber.Trim();
+        if (employee.Email != null && !System.Net.Mail.MailAddress.TryCreate(employee.Email, out _))
+            return BadRequest("A valid employee email address is required.");
 
         employee.Balance = 0;
 
@@ -83,6 +93,7 @@ public class EmployeesController : ControllerBase
     }
 
     // DELETE: api/employees/{id}
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteEmployee(int id)
     {
