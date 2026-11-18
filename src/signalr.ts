@@ -1,160 +1,72 @@
 import {
   HubConnection,
   HubConnectionBuilder,
-  HubConnectionState,
-  LogLevel
+  LogLevel,
 } from "@microsoft/signalr";
+import { API_BASE_URL, getAccessToken } from "./api/api";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ||
-  "http://localhost:5174/api";
-
-const HUB_URL = `${API_BASE_URL.replace(/\/api$/, "")}/orderHub`;
+export type OrderEventPayload = Record<string, unknown>;
+type OrderEventHandler = (payload: OrderEventPayload) => void;
 
 let connection: HubConnection | null = null;
 let startPromise: Promise<void> | null = null;
+const orderHandlers = new Set<OrderEventHandler>();
+const statusHandlers = new Set<OrderEventHandler>();
 
-const createConnection = (): HubConnection => {
-  return new HubConnectionBuilder()
-    .withUrl(HUB_URL, {
-      accessTokenFactory: () =>
-        localStorage.getItem("accessToken") || ""
-    })
+const hubUrl = `${API_BASE_URL.replace(/\/api\/?$/i, "")}/orderHub`;
+
+const ensureConnection = (): HubConnection => {
+  if (connection) return connection;
+  connection = new HubConnectionBuilder()
+    .withUrl(hubUrl, { accessTokenFactory: () => getAccessToken() ?? "" })
     .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
-    .configureLogging(
-      import.meta.env.DEV ? LogLevel.Information : LogLevel.Warning
-    )
+    .configureLogging(import.meta.env.DEV ? LogLevel.Warning : LogLevel.Error)
     .build();
-};
 
-export const getConnection = (): HubConnection => {
-  if (!connection) {
-    connection = createConnection();
-
-    connection.onreconnecting(error => {
-      console.warn("SignalR reconnecting...", error);
-    });
-
-    connection.onreconnected(connectionId => {
-      console.info(
-        "SignalR reconnected:",
-        connectionId
-      );
-    });
-
-    connection.onclose(error => {
-      if (error) {
-        console.warn(
-          "SignalR connection closed:",
-          error.message
-        );
-      } else {
-        console.info("SignalR connection closed.");
-      }
-    });
-  }
-
+  connection.on("ReceiveOrderUpdate", (payload: OrderEventPayload) => {
+    orderHandlers.forEach((handler) => handler(payload));
+  });
+  connection.on("ReceiveStatusUpdate", (payload: OrderEventPayload) => {
+    statusHandlers.forEach((handler) => handler(payload));
+  });
   return connection;
 };
 
-export const startConnection = async (): Promise<void> => {
-  const hub = getConnection();
+export async function startConnection(): Promise<void> {
+  // Employee screens use employee-scoped HTTP endpoints and polling. Do not open
+  // the global broadcast channel for employee accounts.
+  if (!getAccessToken() || localStorage.getItem("role")?.toLowerCase() === "employee") return;
+  const hub = ensureConnection();
+  if (hub.state === "Connected" || hub.state === "Connecting") return;
+  if (startPromise) return startPromise;
 
-  if (
-    hub.state === HubConnectionState.Connected ||
-    hub.state === HubConnectionState.Connecting ||
-    hub.state === HubConnectionState.Reconnecting
-  ) {
-    return;
-  }
-
-  if (startPromise) {
-    return startPromise;
-  }
-
-  startPromise = hub
-    .start()
-    .then(() => {
-      console.info(
-        `SignalR connected to ${HUB_URL}`
-      );
-    })
-    .catch(error => {
-      console.error(
-        "SignalR initial connection failed:",
-        error
-      );
-
-      // Do not break the application if SignalR is unavailable.
-      // Orders.tsx also has polling as a fallback.
+  startPromise = hub.start()
+    .then(() => undefined)
+    .catch((error: unknown) => {
+      // Polling on the pages remains the fallback when the hub is unavailable.
+      if (import.meta.env.DEV) console.warn("SignalR connection could not be started:", error);
     })
     .finally(() => {
       startPromise = null;
     });
-
   return startPromise;
-};
+}
 
-export const stopConnection = async (): Promise<void> => {
-  if (!connection) {
-    return;
-  }
+export function onOrderUpdate(handler: OrderEventHandler): () => void {
+  orderHandlers.add(handler);
+  void startConnection();
+  return () => orderHandlers.delete(handler);
+}
 
-  if (
-    connection.state === HubConnectionState.Connected ||
-    connection.state === HubConnectionState.Reconnecting ||
-    connection.state === HubConnectionState.Connecting
-  ) {
-    try {
-      await connection.stop();
-    } catch (error) {
-      console.warn(
-        "Failed to stop SignalR connection:",
-        error
-      );
-    }
-  }
-};
+export function onStatusUpdate(handler: OrderEventHandler): () => void {
+  statusHandlers.add(handler);
+  void startConnection();
+  return () => statusHandlers.delete(handler);
+}
 
-export const onOrderUpdate = (
-  handler: (order: unknown) => void
-): (() => void) => {
-  const hub = getConnection();
-
-  hub.on(
-    "ReceiveOrderUpdate",
-    handler
-  );
-
-  return () => {
-    hub.off(
-      "ReceiveOrderUpdate",
-      handler
-    );
-  };
-};
-
-export const onStatusUpdate = (
-  handler: (order: unknown) => void
-): (() => void) => {
-  const hub = getConnection();
-
-  hub.on(
-    "ReceiveStatusUpdate",
-    handler
-  );
-
-  return () => {
-    hub.off(
-      "ReceiveStatusUpdate",
-      handler
-    );
-  };
-};
-
-export const isSignalRConnected = (): boolean => {
-  return (
-    connection?.state ===
-    HubConnectionState.Connected
-  );
-};
+export async function stopConnection(): Promise<void> {
+  if (!connection) return;
+  await connection.stop();
+  connection = null;
+  startPromise = null;
+}

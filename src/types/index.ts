@@ -1,4 +1,3 @@
-
 export interface Employee {
   id: number;
   name: string;
@@ -18,6 +17,8 @@ export interface GeoRestaurant {
 
 export interface CartItem {
   menuItemId: number;
+  menuItemCode?: number;
+  restaurantName?: string;
   name: string;
   price: number;
   quantity: number;
@@ -57,7 +58,7 @@ export interface Order {
   driverName?: string | null;
   totalAmount: number;
   status: string;
-  estimatedDeliveryTime?: string;
+  estimatedDeliveryTime?: string | null;
   orderDate: string;
   items: OrderItem[];
 }
@@ -69,4 +70,12 @@ export interface Transaction {
   type: string;
   description: string;
   createdAt: string;
+}
+
+export interface PagedResult<T> {
+  items: T[];
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
 }

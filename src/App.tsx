@@ -1,12 +1,5 @@
-
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
-import {
-  BrowserRouter,
-  Navigate,
-  Route,
-  Routes
-} from "react-router-dom";
-import { ToastContainer } from "react-toastify";
 
 import Employees from "./pages/Employees";
 import Deposit from "./pages/Deposit";
@@ -25,66 +18,22 @@ import MenuAdmin from "./pages/MenuAdmin";
 
 import MainLayout from "./layouts/MainLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { getDefaultRouteForRole, getUserFromToken } from "./utils/auth";
-import { startConnection, stopConnection } from "./signalr";
 
-function SignalRBootstrap() {
-  useEffect(() => {
-    let disposed = false;
-
-    const syncConnection = async () => {
-      if (disposed) return;
-
-      if (getUserFromToken()) {
-        await startConnection();
-      } else {
-        await stopConnection();
-      }
-    };
-
-    void syncConnection();
-
-    const handleAuthChanged = () => {
-      void syncConnection();
-    };
-
-    window.addEventListener("auth-changed", handleAuthChanged);
-    window.addEventListener("storage", handleAuthChanged);
-
-    return () => {
-      disposed = true;
-      window.removeEventListener("auth-changed", handleAuthChanged);
-      window.removeEventListener("storage", handleAuthChanged);
-      void stopConnection();
-    };
-  }, []);
-
-  return null;
-}
-
-function NotFoundRedirect() {
-  const user = getUserFromToken();
-
-  return (
-    <Navigate
-      to={getDefaultRouteForRole(user?.role)}
-      replace
-    />
-  );
-}
+import { startConnection } from "./signalr";
+import { ToastContainer } from "react-toastify";
 
 function App() {
+  useEffect(() => {
+    startConnection();
+  }, []);
+
   return (
     <BrowserRouter>
-      <SignalRBootstrap />
-
       <MainLayout>
         <Routes>
-          {/* Public pages */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
 
-          {/* Employees */}
           <Route
             path="/"
             element={
@@ -103,7 +52,6 @@ function App() {
             }
           />
 
-          {/* Deposits */}
           <Route
             path="/deposit"
             element={
@@ -122,7 +70,15 @@ function App() {
             }
           />
 
-          {/* Restaurants and menu */}
+          <Route
+            path="/menu-admin"
+            element={
+              <ProtectedRoute roles={["Admin"]}>
+                <MenuAdmin />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/restaurants"
             element={
@@ -133,16 +89,6 @@ function App() {
           />
 
           <Route
-            path="/menu-admin"
-            element={
-              <ProtectedRoute roles={["Admin"]}>
-                <MenuAdmin />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Orders */}
-          <Route
             path="/orders"
             element={
               <ProtectedRoute roles={["Admin", "Manager", "Employee"]}>
@@ -151,7 +97,6 @@ function App() {
             }
           />
 
-          {/* Transactions */}
           <Route
             path="/transactions"
             element={
@@ -161,7 +106,6 @@ function App() {
             }
           />
 
-          {/* Admin dashboard */}
           <Route
             path="/admin"
             element={
@@ -171,7 +115,6 @@ function App() {
             }
           />
 
-          {/* Reports */}
           <Route
             path="/reports"
             element={
@@ -181,7 +124,6 @@ function App() {
             }
           />
 
-          {/* Employee pages */}
           <Route
             path="/employee-profile"
             element={
@@ -199,21 +141,10 @@ function App() {
               </ProtectedRoute>
             }
           />
-
-          {/* Redirect unknown URLs instead of showing a blank page */}
-          <Route path="*" element={<NotFoundRedirect />} />
         </Routes>
       </MainLayout>
 
-      <ToastContainer
-        position="top-right"
-        autoClose={4000}
-        newestOnTop
-        closeOnClick
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
+      <ToastContainer position="top-right" />
     </BrowserRouter>
   );
 }

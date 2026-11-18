@@ -1,180 +1,44 @@
-// import { useState } from "react";
-// import type { CartItem } from "../types/cart";
+import type { MenuItem } from "../types";
 
-// export function useCart() {
-//   const [cart, setCart] = useState<CartItem[]>([]);
+const item = (
+  id: number,
+  name: string,
+  description: string,
+  price: number
+): MenuItem => ({ id, name, description, price, restaurantId: 0, isAvailable: true });
 
-//   const addToCart = (item: CartItem) => {
-//     setCart(prev => {
-//       const existing = prev.find(i => i.menuItemId === item.menuItemId);
-//       if (existing) {
-//         return prev.map(i =>
-//           i.menuItemId === item.menuItemId
-//             ? { ...i, quantity: i.quantity + 1 }
-//             : i
-//         );
-//       }
-//       return [...prev, item];
-//     });
-//   };
-
-//   const removeFromCart = (id: number) => {
-//     setCart(prev => prev.filter(i => i.menuItemId !== id));
-//   };
-
-//   const updateQuantity = (id: number, qty: number) => {
-//     setCart(prev =>
-//       prev.map(i =>
-//         i.menuItemId === id ? { ...i, quantity: qty } : i
-//       )
-//     );
-//   };
-
-//   const clearCart = () => setCart([]);
-
-//   const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
-
-//   return {
-//     cart,
-//     addToCart,
-//     removeFromCart,
-//     updateQuantity,
-//     clearCart,
-//     total
-//   };
-// }
-
-export interface SampleMenuItem {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-}
-
-const defaultMenu: SampleMenuItem[] = [
-  {
-    id: 1,
-    name: "Chicken Burger",
-    description: "Grilled chicken burger with lettuce and sauce",
-    price: 65,
-  },
-  {
-    id: 2,
-    name: "Beef Burger",
-    description: "Beef burger with cheese and fresh vegetables",
-    price: 75,
-  },
-  {
-    id: 3,
-    name: "Chicken Wrap",
-    description: "Grilled chicken wrap with fresh salad",
-    price: 60,
-  },
-  {
-    id: 4,
-    name: "Chips",
-    description: "Crispy golden fries",
-    price: 30,
-  },
-  {
-    id: 5,
-    name: "Soft Drink",
-    description: "Cold soft drink",
-    price: 20,
-  },
-];
-
-export const getSampleMenu = (
-  restaurantName: string
-): SampleMenuItem[] => {
+export const getSampleMenu = (restaurantName: string): MenuItem[] => {
   const name = restaurantName.toLowerCase();
 
-  if (name.includes("spur")) {
+  if (name.includes("nando")) {
     return [
-      {
-        id: 1,
-        name: "Spur Burger",
-        description: "Classic Spur-style beef burger",
-        price: 89,
-      },
-      {
-        id: 2,
-        name: "Chicken Schnitzel",
-        description: "Chicken schnitzel with chips",
-        price: 99,
-      },
-      {
-        id: 3,
-        name: "Spur Wings",
-        description: "Spicy grilled chicken wings",
-        price: 85,
-      },
-      {
-        id: 4,
-        name: "Chips",
-        description: "Crispy golden chips",
-        price: 35,
-      },
+      item(1, "Quarter Chicken Meal", "Chicken, chips and drink", 95),
+      item(2, "Chicken Burger Meal", "Burger, chips and drink", 85),
+      item(3, "Full Chicken", "Flame-grilled full chicken", 210)
     ];
   }
 
-  if (name.includes("kfc")) {
+  if (name.includes("wimpy")) {
     return [
-      {
-        id: 1,
-        name: "Chicken Burger",
-        description: "Crispy chicken burger",
-        price: 55,
-      },
-      {
-        id: 2,
-        name: "Chicken Wrap",
-        description: "Crispy chicken wrap",
-        price: 49,
-      },
-      {
-        id: 3,
-        name: "Chicken Wings",
-        description: "Crispy chicken wings",
-        price: 65,
-      },
-      {
-        id: 4,
-        name: "Chips",
-        description: "Golden fries",
-        price: 30,
-      },
+      item(1, "Classic Burger", "Beef burger with chips", 89),
+      item(2, "Breakfast Plate", "Eggs, bacon, toast and chips", 79),
+      item(3, "Chicken Schnitzel", "Chicken schnitzel with chips", 105)
     ];
   }
 
-  if (name.includes("mcdonald")) {
+  if (name.includes("kota")) {
     return [
-      {
-        id: 1,
-        name: "Big Mac",
-        description: "Classic Big Mac burger",
-        price: 59,
-      },
-      {
-        id: 2,
-        name: "McChicken",
-        description: "Crispy chicken burger",
-        price: 55,
-      },
-      {
-        id: 3,
-        name: "Chicken Wrap",
-        description: "Chicken wrap with fresh salad",
-        price: 49,
-      },
-      {
-        id: 4,
-        name: "Fries",
-        description: "McDonald's fries",
-        price: 29,
-      },
+      item(1, "Classic Kota", "Kota with chips, cheese and polony", 45),
+      item(2, "Full House Kota", "Kota with egg, cheese, russian and chips", 75),
+      item(3, "Kota Combo", "Kota with chips and drink", 90)
     ];
   }
 
-  return defaultMenu;
+  return [
+    item(1, "Chicken Meal", "Chicken, chips and drink", 90),
+    item(2, "Beef Burger Meal", "Burger, chips and drink", 85),
+    item(3, "Wrap Combo", "Wrap, chips and drink", 80)
+  ];
 };
+
+export { getSampleMenu as getSampleMenus };

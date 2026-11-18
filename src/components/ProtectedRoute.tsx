@@ -1,44 +1,20 @@
-
-import type { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
-
-import {
-  getDefaultRouteForRole,
-  getUserFromToken
-} from "../utils/auth";
+import { getUserFromToken } from "../utils/auth";
 
 interface Props {
-  children: ReactNode;
+  children: React.ReactNode;
   roles?: string[];
 }
 
-export default function ProtectedRoute({
-  children,
-  roles
-}: Props) {
+export default function ProtectedRoute({ children, roles }: Props) {
   const user = getUserFromToken();
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" />;
   }
 
-  const currentRole = user.role.trim().toLowerCase();
-
-  const isAllowed =
-    !roles ||
-    roles.some(
-      role => role.trim().toLowerCase() === currentRole
-    );
-
-  if (!isAllowed) {
-    const defaultRoute = getDefaultRouteForRole(user.role);
-
-    return (
-      <Navigate
-        to={defaultRoute}
-        replace
-      />
-    );
+  if (roles && !roles.includes(user.role)) {
+    return <Navigate to="/" />;
   }
 
   return <>{children}</>;
